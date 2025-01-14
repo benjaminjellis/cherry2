@@ -6,16 +6,21 @@ use axum::{
 use thiserror::Error;
 use tracing::error;
 
+use crate::db::CherryDbError;
+
 #[derive(Error, Debug)]
 pub(crate) enum CherryError {
     #[error("Encountered error when setting up server: `{0}`")]
     Setup(String),
+    #[error(transparent)]
+    CherryDbError(#[from] CherryDbError),
 }
 
 impl IntoResponse for CherryError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
             CherryError::Setup(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+            CherryError::CherryDbError(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
         };
         error!(error_message);
 

@@ -1,9 +1,24 @@
+pub(crate) mod coffee;
+pub(crate) mod experiments;
+pub(crate) mod roasters;
+
 use sqlx::{
     migrate::Migrator,
     postgres::{PgPool, PgPoolOptions},
 };
+use thiserror::Error;
 
 use crate::CherryError;
+
+#[derive(Error, Debug)]
+pub(crate) enum CherryDbError {
+    #[error("Failed to insert: `{0}`")]
+    InsertFailed(String),
+    #[error("Found conflicting key: `{0}`")]
+    KeyConflict(String),
+    #[error("Failed to delete: `{0}`")]
+    Delete(String),
+}
 
 const MAX_CONNECTIONS: u32 = 50;
 
