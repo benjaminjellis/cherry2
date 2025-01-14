@@ -6,4 +6,4 @@
 
 </p>
 
-cherry is a logbook app for recording home brewing coffee experiments named after the fruit from which coffee is derived. 
+cherry is a website for logging your coffee brewing
