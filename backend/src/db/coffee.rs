@@ -13,7 +13,8 @@ pub(crate) struct CoffeeDb {
     #[allow(dead_code)]
     user_id: Uuid,
     name: String,
-    roaster: String,
+    roaster: Uuid,
+    roaster_name: String,
     roast_date: NaiveDate,
     origin: String,
     varetial: String,
@@ -30,7 +31,8 @@ impl From<CoffeeDb> for Coffee {
         Self {
             id: value.id.into(),
             name: value.name,
-            roaster: value.roaster,
+            roaster_name: value.roaster_name,
+            roaster: value.roaster.into(),
             roast_date: value.roast_date,
             origin: value.origin,
             varetial: value.varetial,
@@ -102,17 +104,29 @@ pub(crate) async fn get_coffee_by_id(
     pool: &PgPool,
     user_id: &UserId,
     coffee_id: &CoffeeId,
-) -> Result<Coffee, CherryDbError> {
+) -> Result<Option<Coffee>, CherryDbError> {
     let coffee = sqlx::query_as!(
         CoffeeDb,
-        "
-        select * from coffees where coffees.id = $1",
-        coffee_id.as_uuid()
+        r#"
+        select
+            coffees.*, roasters.name AS roaster_name
+        from
+            coffees
+        inner join
+            roasters
+        on
+            coffees.roaster = roasters.id
+        where
+            coffees.id = $1 
+            and coffees.user_id = $2
+        limit 1;"#,
+        coffee_id.as_uuid(),
+        user_id.as_uuid()
     )
-    .fetch_one(pool)
+    .fetch_optional(pool)
     .await
     .map_err(|err| CherryDbError::Select(err.to_string()))?;
-    Ok(coffee.into())
+    Ok(coffee.map(Into::into))
 }
 
 pub(crate) async fn get_all_coffees_for_user(pool: &PgPool, user_id: &UserId) {
@@ -187,7 +201,8 @@ mod test {
     }
 
     #[sqlx::test]
-    async fn test_get_coffee_by_id(pool: PgPool) {
+    // TODO: add roaster
+    async fn test_get_coffee_by_id_no_roaster(pool: PgPool) {
         let user_id = Uuid::now_v7().into();
         let coffee_id = Uuid::now_v7().into();
 
@@ -207,7 +222,8 @@ mod test {
 
         add_coffee(&pool, &user_id, &coffee_in).await.unwrap();
 
-        let coffee_out = get_coffee_by_id(&pool, &user_id, &coffee_id).await.unwrap();
+        let res = get_coffee_by_id(&pool, &user_id, &coffee_id).await.unwrap();
+        assert!(res.is_none());
     }
 
     #[sqlx::test]

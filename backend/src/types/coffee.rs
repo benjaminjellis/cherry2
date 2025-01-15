@@ -37,7 +37,8 @@ pub(crate) struct NewCoffee {
 pub(crate) struct Coffee {
     pub(crate) id: CoffeeId,
     pub(crate) name: String,
-    pub(crate) roaster: String,
+    pub(crate) roaster_name: String,
+    pub(crate) roaster: RoasterId,
     pub(crate) roast_date: NaiveDate,
     pub(crate) origin: String,
     pub(crate) varetial: String,
