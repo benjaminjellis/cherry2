@@ -9,7 +9,9 @@ create table coffees(
   process text not null,
   tasting_notes text not null,
   liked bool not null,
-  in_current_rotation bool not null
+  in_current_rotation bool not null,
+  added timestamp not null,
+  last_updated timestamp not null
 );
 
 create table roasters(
@@ -27,5 +29,7 @@ create table experiments(
 	recipe text not null,
 	liked bool not null,
 	user_id uuid not null,
-  notes text not null
+  notes text not null,
+  added timestamp not null,
+  last_updated timestamp not null
 );

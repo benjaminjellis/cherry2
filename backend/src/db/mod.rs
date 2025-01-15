@@ -18,6 +18,8 @@ pub(crate) enum CherryDbError {
     KeyConflict(String),
     #[error("Failed to delete: `{0}`")]
     Delete(String),
+    #[error("Failed to select: `{0}`")]
+    Select(String),
 }
 
 const MAX_CONNECTIONS: u32 = 50;

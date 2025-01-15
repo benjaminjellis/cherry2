@@ -8,10 +8,10 @@ pub(crate) struct UserId(Uuid);
 impl UserId {
     #[cfg(test)]
     pub(crate) fn new() -> Self {
-        Self(Uuid::new_v4())
+        Self(Uuid::now_v7())
     }
 
-    pub(crate) fn to_uuid(&self) -> &Uuid {
+    pub(crate) fn as_uuid(&self) -> &Uuid {
         &self.0
     }
 }

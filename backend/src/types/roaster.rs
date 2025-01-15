@@ -1,10 +1,10 @@
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
 pub(crate) struct RoasterId(Uuid);
 
 impl RoasterId {
-    pub(crate) fn to_uuid(&self) -> &Uuid {
+    pub(crate) fn as_uuid(&self) -> &Uuid {
         &self.0
     }
 }
