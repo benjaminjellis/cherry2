@@ -1,3 +1,4 @@
+import components/table
 import gleam/dynamic
 import gleam/list
 import lustre
@@ -60,17 +61,20 @@ fn get_cat() -> effect.Effect(Msg) {
 }
 
 fn view(model: Model) -> element.Element(Msg) {
-  html.div([class("flex flex-col gap-12")], [header(), main_content()])
+  let data = table.TableData(header: ["First", "Second", "Third"], content: [])
+  html.div([class("flex flex-col gap-12")], [header(), main_content(data)])
 }
 
-fn main_content() -> element.Element(Msg) {
+fn main_content(data: table.TableData) -> element.Element(Msg) {
   html.main([class("px-4")], [
-    html.div([class("flex flex-col gap-8 w-full max-w-screen-xl mx-auto")], []),
+    html.div([class("flex flex-col gap-8 w-full max-w-screen-xl mx-auto")], [
+      table.simple_table(data),
+    ]),
   ])
 }
 
 pub fn header() -> element.Element(a) {
-  html.header([class("p-4 bg-red-500 text-white")], [
+  html.header([class("py-5 px-5 text-white")], [
     html.img([attribute.src("./priv/static/assets/logo.png")]),
   ])
 }

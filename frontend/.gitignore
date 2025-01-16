@@ -3,3 +3,6 @@
 /build
 erl_crash.dump
 *.mjs
+node_modules
+package.json
+package-lock.json
