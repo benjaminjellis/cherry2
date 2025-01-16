@@ -2,19 +2,16 @@ import gleam/list
 import lustre/attribute.{class}
 import lustre/element/html
 import lustre/internals/vdom
-
-pub type TableData {
-  TableData(header: List(String), content: List(List(String)))
-}
+import types.{type TableData}
 
 fn table_class() {
-  class("table-auto border-collapsenpx tailwindcss ")
+  class("table-auto border-collapse border border-gray-300 w-full")
 }
 
 pub fn simple_table(data: TableData) {
   html.table([table_class()], [
     html.thead([], list.reverse(table_header(data.header, []))),
-    html.tbody([], []),
+    html.tbody([], list.reverse(table_body(data.content, []))),
   ])
 }
 
@@ -29,10 +26,41 @@ fn table_header(
   }
 }
 
-fn table_body(content: List(List(String))) {
-  todo
+fn row_class() {
+  class("hover:bg-pink-200")
+}
+
+fn table_body(
+  content: List(List(String)),
+  out: List(vdom.Element(a)),
+) -> List(vdom.Element(a)) {
+  case content {
+    [] -> out
+    [h] -> [html.tr([row_class()], list.reverse(one_table_row(h, []))), ..out]
+    [h, ..t] ->
+      table_body(t, [
+        html.tr([row_class()], list.reverse(one_table_row(h, []))),
+        ..out
+      ])
+  }
 }
 
 fn one_th_for_header(value: String) {
-  html.th([], [html.p([class("")], [html.text(value)])])
+  html.th([class("border border-gray-300 text-left p-2")], [
+    html.p([class("")], [html.text(value)]),
+  ])
+}
+
+fn one_table_row(value: List(String), out: List(vdom.Element(a))) {
+  case value {
+    [] -> out
+    [h] -> [one_table_element(h), ..out]
+    [h, ..t] -> one_table_row(t, [one_table_element(h), ..out])
+  }
+}
+
+fn one_table_element(value: String) {
+  html.td([class("border border-gray-300 text-left p-2")], [
+    html.p([class("")], [html.text(value)]),
+  ])
 }
