@@ -35,20 +35,24 @@ fn header() -> element.Element(a) {
   )
 }
 
-fn li_item(text: String) {
+fn li_item(text: String, href: String) {
   html.li([class("text-lg font-bold")], [
-    html.a([class("hover:underline hover:decoration-pink-300 decoration-4")], [
-      html.text(text),
-    ]),
+    html.a(
+      [
+        class("hover:underline hover:decoration-pink-300 decoration-4"),
+        attribute.href(href),
+      ],
+      [html.text(text)],
+    ),
   ])
 }
 
 fn header_nav() {
   html.nav([], [
     html.ul([class("flex space-x-4")], [
-      li_item("coffees ☕"),
-      li_item("experiments 🧪"),
-      li_item("about 🔎"),
+      li_item("coffees ☕", "./coffees"),
+      li_item("experiments 🧪", "./experiments"),
+      li_item("about 🔎", "./about"),
     ]),
   ])
 }

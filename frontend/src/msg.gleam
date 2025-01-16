@@ -1,4 +1,1 @@
-pub type Msg {
-  UserIncrementedCount
-  UserDecrementedCount
-}
+pub type Msg
