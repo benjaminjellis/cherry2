@@ -62,19 +62,28 @@ fn get_cat() -> effect.Effect(Msg) {
 
 fn view(model: Model) -> element.Element(Msg) {
   let data = table.TableData(header: ["First", "Second", "Third"], content: [])
-  html.div([class("flex flex-col gap-12")], [header(), main_content(data)])
-}
-
-fn main_content(data: table.TableData) -> element.Element(Msg) {
-  html.main([class("px-4")], [
-    html.div([class("flex flex-col gap-8 w-full max-w-screen-xl mx-auto")], [
-      table.simple_table(data),
-    ]),
+  html.div([class("min-h-screen flex flex-col")], [
+    header(),
+    main_content(data),
+    footer(),
   ])
 }
 
-pub fn header() -> element.Element(a) {
-  html.header([class("py-5 px-5 text-white")], [
+fn main_content(data: table.TableData) -> element.Element(Msg) {
+  html.main([class("flex-grow p-4")], [
+    html.div([class("min-h-screen flex flex-col")], [table.simple_table(data)]),
+  ])
+}
+
+fn header() -> element.Element(a) {
+  html.header([class("py-5 px-5 text-white bf-faffpink")], [
     html.img([attribute.src("./priv/static/assets/logo.png")]),
+  ])
+}
+
+fn footer() -> element.Element(a) {
+  html.footer([class("bg-pink-200 text-white p-4")], [
+    html.div([class("px-5")], [html.text("footer")]),
+    html.div([class("px-5")], [html.text("footer 2")]),
   ])
 }
