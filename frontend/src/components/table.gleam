@@ -27,7 +27,7 @@ fn table_header(
 }
 
 fn row_class() {
-  class("hover:bg-pink-200")
+  class("hover:bg-pink-300")
 }
 
 fn table_body(
