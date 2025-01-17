@@ -11,9 +11,11 @@ pub fn header() -> element.Element(a) {
     [class("flex justify-between items-center p-4 border-b-2 border-red-200")],
     [
       html.div([class("text-2xl font-bold")], [
-        html.img([
-          class("object-cover h-14 w-30 "),
-          attribute.src("./priv/static/assets/logo.png"),
+        html.a([attribute.href("./splash")], [
+          html.img([
+            class("object-cover h-14 w-30 "),
+            attribute.src("./priv/static/assets/logo.png"),
+          ]),
         ]),
       ]),
       header_nav(),

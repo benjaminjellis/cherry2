@@ -3,4 +3,5 @@ pub type Route {
   Coffees
   Experiments
   About
+  CoffeeOverview(id: String)
 }
