@@ -1,16 +1,16 @@
+import cherry/model.{type Model, Model}
+import cherry/msg.{type Msg, OnRouteChange}
+import cherry/route.{About, Coffees, Experiments, Splash}
+import cherry/types.{TableData}
+import cherry/views/about.{about_view}
+import cherry/views/coffees.{coffees_view}
+import cherry/views/experiments.{experiments_view}
+import cherry/views/splash.{splash_view}
 import gleam/uri.{type Uri}
 import lustre
 import lustre/effect
 import lustre/element
-import model.{type Model, Model}
 import modem
-import msg.{type Msg, OnRouteChange}
-import route.{About, Coffees, Experiments, Splash}
-import types.{TableData}
-import views/about.{about_view}
-import views/coffees.{coffees_view}
-import views/experiments.{experiments_view}
-import views/splash.{splash_view}
 
 pub fn main() {
   let assert Ok(_) =

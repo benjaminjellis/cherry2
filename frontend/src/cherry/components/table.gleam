@@ -1,8 +1,8 @@
+import cherry/types.{type TableData}
 import gleam/list
 import lustre/attribute.{class}
 import lustre/element/html
 import lustre/internals/vdom
-import types.{type TableData}
 
 fn table_class() {
   class("table-auto border-collapse w-full")
