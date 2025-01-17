@@ -2,9 +2,13 @@ import lustre/attribute.{class}
 import lustre/element
 import lustre/element/html
 
+pub fn view_class() {
+  class("bg-yellow-50 min-h-screen flex flex-col")
+}
+
 pub fn header() -> element.Element(a) {
   html.header(
-    [class("flex justify-between items-center p-4 border-b-2 border-red-300")],
+    [class("flex justify-between items-center p-4 border-b-2 border-red-200")],
     [
       html.div([class("text-2xl font-bold")], [
         html.img([

@@ -5,7 +5,7 @@ import lustre/internals/vdom
 import types.{type TableData}
 
 fn table_class() {
-  class("table-auto border-collapse border border-gray-300 w-full")
+  class("table-auto border-collapse w-full")
 }
 
 pub fn simple_table(data: TableData) {
@@ -46,7 +46,7 @@ fn table_body(
 }
 
 fn one_th_for_header(value: String) {
-  html.th([class("border border-gray-300 text-left p-2")], [
+  html.th([class("border-b-4 border-lime-200 text-left p-2")], [
     html.p([class("")], [html.text(value)]),
   ])
 }
@@ -60,7 +60,7 @@ fn one_table_row(value: List(String), out: List(vdom.Element(a))) {
 }
 
 fn one_table_element(value: String) {
-  html.td([class("border border-gray-300 text-left p-2")], [
+  html.td([class("border-b border-lime-200 text-left p-2")], [
     html.p([class("")], [html.text(value)]),
   ])
 }

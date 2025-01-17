@@ -4,14 +4,10 @@ import lustre/element/html
 import model.{type Model}
 import msg
 import types.{type TableData}
-import views/shared.{footer, header}
+import views/shared.{footer, header, view_class}
 
 pub fn splash_view(model: Model) -> element.Element(msg.Msg) {
-  html.div([class("min-h-screen flex flex-col")], [
-    header(),
-    main_content(model.coffees),
-    footer(),
-  ])
+  html.div([view_class()], [header(), main_content(model.coffees), footer()])
 }
 
 fn main_content(_data: TableData) -> element.Element(msg.Msg) {
