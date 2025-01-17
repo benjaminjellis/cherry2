@@ -13,8 +13,9 @@ import views/experiments.{experiments_view}
 import views/splash.{splash_view}
 
 pub fn main() {
-  let app = lustre.application(init, update, view)
-  let assert Ok(_) = lustre.start(app, "#app", Nil)
+  let assert Ok(_) =
+    lustre.application(init, update, view)
+    |> lustre.start("#app", Nil)
 
   Nil
 }
