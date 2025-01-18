@@ -2,10 +2,11 @@ mod api;
 mod coffee;
 mod db;
 mod error;
+mod roaster;
 mod state;
 mod types;
 
-use api::routes::add_new_coffee;
+use api::routes::{add_new_coffee, add_new_roaster, get_coffees, get_roaster};
 pub(crate) use error::CherryError;
 
 use axum::{
@@ -46,7 +47,9 @@ async fn main() -> Result<(), CherryError> {
     let app_state = AppState { db_pool };
 
     let app = Router::new()
-        .route("/coffee", post(add_new_coffee))
+        .route("/coffee", post(add_new_coffee).get(get_coffees))
+        .route("/roaster", post(add_new_roaster))
+        .route("/roaster/{roaster_id}", get(get_roaster))
         .route("/", get(|| async { "Hello, World!" }))
         .with_state(app_state);
 

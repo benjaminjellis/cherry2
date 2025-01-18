@@ -1,9 +1,12 @@
-use crate::types::coffee::{CoffeeId, NewCoffee};
+use crate::types::{
+    coffee::{Coffee, CoffeeId, NewCoffee},
+    roaster::{NewRoaster, Roaster, RoasterId},
+};
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub(crate) struct NewCoffeeRequestDto {
     pub(crate) name: String,
     pub(crate) roaster: Uuid,
@@ -17,7 +20,7 @@ pub(crate) struct NewCoffeeRequestDto {
 }
 
 impl NewCoffeeRequestDto {
-    pub(crate) fn to_new_coffee(self, coffee_id: CoffeeId, added: DateTime<Utc>) -> NewCoffee {
+    pub(crate) fn into_new_coffee(self, coffee_id: CoffeeId, added: DateTime<Utc>) -> NewCoffee {
         NewCoffee {
             id: coffee_id,
             name: self.name,
@@ -39,6 +42,7 @@ pub(crate) struct CoffeeDto {
     pub(crate) name: String,
     pub(crate) id: Uuid,
     pub(crate) roaster: Uuid,
+    pub(crate) roaster_name: String,
     pub(crate) roast_date: NaiveDate,
     pub(crate) origin: String,
     pub(crate) varetial: String,
@@ -48,8 +52,8 @@ pub(crate) struct CoffeeDto {
     pub(crate) in_current_rotation: bool,
 }
 
-impl From<NewCoffee> for CoffeeDto {
-    fn from(value: NewCoffee) -> Self {
+impl From<Coffee> for CoffeeDto {
+    fn from(value: Coffee) -> Self {
         Self {
             name: value.name,
             id: *value.id.as_uuid(),
@@ -61,6 +65,45 @@ impl From<NewCoffee> for CoffeeDto {
             tasting_notes: value.tasting_notes,
             liked: value.liked,
             in_current_rotation: value.in_current_rotation,
+            roaster_name: value.roaster_name,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct NewRoasterDto {
+    pub(crate) name: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct RoasterDto {
+    pub(crate) id: Uuid,
+    pub(crate) name: String,
+}
+
+impl From<Roaster> for RoasterDto {
+    fn from(value: Roaster) -> Self {
+        Self {
+            id: *value.id.as_uuid(),
+            name: value.name,
+        }
+    }
+}
+
+impl From<NewRoaster> for RoasterDto {
+    fn from(value: NewRoaster) -> Self {
+        Self {
+            id: *value.id.as_uuid(),
+            name: value.name,
+        }
+    }
+}
+
+impl NewRoasterDto {
+    pub(crate) fn into_new_roaster(self, id: RoasterId) -> NewRoaster {
+        NewRoaster {
+            id,
+            name: self.name,
         }
     }
 }

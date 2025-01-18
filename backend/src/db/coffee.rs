@@ -50,13 +50,24 @@ pub(crate) async fn add_coffee(
     pool: &PgPool,
     user_id: &UserId,
     coffee: &NewCoffee,
-) -> Result<PgQueryResult, CherryDbError> {
-    sqlx::query!(
+) -> Result<Coffee, CherryDbError> {
+    let coffee = sqlx::query_as!(
+        CoffeeDb,
         r#"
+        with inserted as (
         insert into coffees (id, user_id, name, roaster,
             roast_date, origin, varetial, process, tasting_notes, 
             liked, in_current_rotation, added, last_updated)
-        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        returning *
+        )
+        select 
+            inserted.*,  roasters.name AS roaster_name 
+        from inserted
+        inner join 
+         roasters
+        on
+            inserted.roaster = roasters.id;
         "#,
         coffee.id.as_uuid(),
         user_id.as_uuid(),
@@ -72,14 +83,15 @@ pub(crate) async fn add_coffee(
         coffee.added.naive_utc(),
         coffee.added.naive_utc()
     )
-    .execute(pool)
+    .fetch_one(pool)
     .await
     .map_err(|e| match e {
         sqlx::Error::Database(db_error) if db_error.constraint() == Some("coffees_id_key") => {
             CherryDbError::KeyConflict("id already used".into())
         }
         _ => CherryDbError::InsertFailed(e.to_string()),
-    })
+    })?;
+    Ok(coffee.into())
 }
 
 pub(crate) async fn delete_coffee(
@@ -129,8 +141,29 @@ pub(crate) async fn get_coffee_by_id(
     Ok(coffee.map(Into::into))
 }
 
-pub(crate) async fn get_all_coffees_for_user(pool: &PgPool, user_id: &UserId) {
-    // select * from coffees where coffee.user_id = $1
+pub(crate) async fn get_all_coffees_for_user(
+    pool: &PgPool,
+    user_id: &UserId,
+) -> Result<Vec<Coffee>, CherryDbError> {
+    let coffee = sqlx::query_as!(
+        CoffeeDb,
+        r#"
+        select
+            coffees.*, roasters.name AS roaster_name
+        from
+            coffees
+        inner join
+            roasters
+        on
+            coffees.roaster = roasters.id
+        where
+            coffees.user_id = $1;"#,
+        user_id.as_uuid()
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|err| CherryDbError::Select(err.to_string()))?;
+    Ok(coffee.into_iter().map(Into::into).collect())
 }
 
 #[cfg(test)]
