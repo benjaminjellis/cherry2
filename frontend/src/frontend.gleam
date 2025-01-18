@@ -1,5 +1,5 @@
 import cherry/model.{type Model, Model}
-import cherry/msg.{type Msg, OnRouteChange}
+import cherry/msg.{type Msg, EmiaiInput, LogInFormSubmit, OnRouteChange}
 import cherry/route.{
   About, CoffeeOverview, Coffees, Experiments, NotFound, Profile, Splash,
 }
@@ -13,6 +13,7 @@ import cherry/views/profile
 import cherry/views/splash
 import gleam/dict
 import gleam/io
+import gleam/option.{None, Some}
 import gleam/uri.{type Uri}
 import lustre
 import lustre/effect
@@ -58,7 +59,10 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
     Ok(uri) -> map_uri_to_route(uri)
     Error(_) -> Splash
   }
-  #(Model(data, load_route, dict, False), modem.init(on_route_change))
+  #(
+    Model(data, load_route, dict, False, model.LogInInput(None, None)),
+    modem.init(on_route_change),
+  )
 }
 
 fn on_route_change(uri: Uri) -> Msg {
@@ -79,6 +83,24 @@ fn map_uri_to_route(uri: Uri) -> route.Route {
 pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
   case msg {
     OnRouteChange(route) -> update_on_route_change(model, route)
+    EmiaiInput(input) -> {
+      let log_in_input =
+        model.LogInInput(..model.log_in_input, email: Some(input))
+      #(Model(..model, log_in_input: log_in_input), effect.none())
+    }
+    msg.PasswordInput(input) -> {
+      let log_in_input =
+        model.LogInInput(..model.log_in_input, password: Some(input))
+      #(Model(..model, log_in_input: log_in_input), effect.none())
+    }
+    LogInFormSubmit(password, email) -> {
+      io.debug(password)
+      io.debug(email)
+      // TODO: dispatch this the backend
+      let log_in_input = model.LogInInput(None, None)
+
+      #(Model(..model, log_in_input: log_in_input), effect.none())
+    }
   }
 }
 

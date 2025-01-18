@@ -3,7 +3,6 @@ import cherry/msg
 import cherry/views/shared.{
   footer, header, main_class, main_div_class, view_class,
 }
-import lustre/attribute.{class}
 import lustre/element
 import lustre/element/html
 

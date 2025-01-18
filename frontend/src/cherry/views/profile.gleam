@@ -3,34 +3,41 @@ import cherry/msg
 import cherry/views/shared.{
   footer, header, main_class, main_div_class, view_class,
 }
+import gleam/option
 import lustre/attribute.{class}
-import lustre/element
+import lustre/element.{type Element}
 import lustre/element/html
+import lustre/event
 
 pub fn view(model: Model) -> element.Element(msg.Msg) {
-  html.div([view_class()], [
-    header(),
-    main_content(model.is_user_logged_in),
-    footer(),
-  ])
+  html.div([view_class()], [header(), main_content(model), footer()])
 }
 
-fn log_in_body() {
+fn log_in_body(model: Model) {
   html.div([class("w-full max-w-sm p-6 bg-pink-300 rounded-lg shadow-md")], [
     html.h2([class("mb-6 text-2xl font-bold text-center text-gray-800")], [
       html.text("Login"),
     ]),
-    html.form([], [email_input(), password_input(), submit()]),
+    html.form(
+      [
+        event.on_submit(msg.LogInFormSubmit(
+          password: model.log_in_input.password |> option.unwrap(""),
+          email: model.log_in_input.email |> option.unwrap(""),
+        )),
+      ],
+      [email_input(), password_input(), submit()],
+    ),
     html.p([class("mt-4 text-sm text-center text-gray-600")], [
       html.text("Don't have an account?"),
     ]),
   ])
 }
 
-fn email_input() {
+fn email_input() -> Element(msg.Msg) {
   html.div([class("mb-4")], [
     html.label([class("block mb-2 text-sm font-medium")], [html.text("Email")]),
     html.input([
+      event.on_input(msg.EmiaiInput),
       attribute.type_("email"),
       attribute.id("email"),
       attribute.class(
@@ -48,6 +55,7 @@ fn password_input() {
       html.text("Password"),
     ]),
     html.input([
+      event.on_input(msg.PasswordInput),
       attribute.type_("password"),
       attribute.id("password"),
       attribute.class(
@@ -75,10 +83,10 @@ fn profile_body() {
   ])
 }
 
-fn main_content(is_user_logged_in: Bool) -> element.Element(msg.Msg) {
-  let body = case is_user_logged_in {
+fn main_content(model: Model) -> element.Element(msg.Msg) {
+  let body = case model.is_user_logged_in {
     True -> profile_body()
-    False -> log_in_body()
+    False -> log_in_body(model)
   }
   html.main([main_class()], [html.div([main_div_class()], [body])])
 }
