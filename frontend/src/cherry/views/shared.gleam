@@ -3,7 +3,11 @@ import lustre/element
 import lustre/element/html
 
 pub fn view_class() {
-  class("bg-yellow-50 min-h-screen flex flex-col")
+  class("bg-yellow-50 min-h-svh flex flex-col")
+}
+
+pub fn main_div_class() {
+  class("min-h-100 flex flex-col")
 }
 
 pub fn header() -> element.Element(a) {
@@ -41,23 +45,39 @@ fn header_nav() {
       li_item("coffees ☕", "./coffees"),
       li_item("experiments 🧪", "./experiments"),
       li_item("about 🔎", "./about"),
+      li_item("profile 👤", "/profile"),
     ]),
   ])
 }
 
 pub fn footer() -> element.Element(a) {
-  html.footer([class("bg-pink-300 p-4")], [
+  html.footer([class("p-4 border-t-2 border-red-200")], [
     html.div([class("flex justify-center")], [
       html.a(
         [
           attribute.href("https://github.com/benjaminjellis/cherry2"),
           attribute.target("_blank"),
+          class("mx-2"),
         ],
         [
           html.img([
-            class("h-10 w-10"),
+            class("h-7 w-7"),
             attribute.src("https://cdn-icons-png.flaticon.com/512/25/25231.png"),
             attribute.alt("GitHub"),
+          ]),
+        ],
+      ),
+      html.a(
+        [
+          attribute.href("https://ko-fi.com/benjaminjellis"),
+          attribute.target("_blank"),
+          class("mx-2"),
+        ],
+        [
+          html.img([
+            class("h-7 w-7"),
+            attribute.src("https://cdn-icons-png.flaticon.com/512/25/25231.png"),
+            attribute.alt("Kofi"),
           ]),
         ],
       ),

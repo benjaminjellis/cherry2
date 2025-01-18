@@ -1,5 +1,6 @@
 import cherry/msg.{type Msg}
-import cherry/types.{type CoffeeData, type CoffeesData}
+import cherry/types.{type CoffeeData}
+import gleam/dict
 import gleam/list
 import lustre/attribute.{class}
 import lustre/element/html
@@ -14,10 +15,12 @@ fn row_class(coffee_id: String) {
   [class("hover:bg-pink-300"), event.on_click(msg.UserClickedRow(coffee_id))]
 }
 
-pub fn coffees_table(data: CoffeesData) -> vdom.Element(msg.Msg) {
+pub fn coffees_table(
+  data: dict.Dict(String, CoffeeData),
+) -> vdom.Element(msg.Msg) {
   html.table([table_class()], [
     html.thead([], header()),
-    html.tbody([], list.reverse(rows(data.coffees, []))),
+    html.tbody([], list.reverse(rows(data |> dict.to_list, []))),
   ])
 }
 
@@ -29,19 +32,19 @@ fn header() {
   ]
 }
 
-fn rows(coffees: List(CoffeeData), out: List(vdom.Element(msg.Msg))) {
+fn rows(coffees: List(#(String, CoffeeData)), out: List(vdom.Element(msg.Msg))) {
   case coffees {
     [] -> out
-    [h] -> [build_row(h), ..out]
-    [h, ..t] -> rows(t, [build_row(h), ..out])
+    [h] -> [build_row(h.0, h.1), ..out]
+    [h, ..t] -> rows(t, [build_row(h.0, h.1), ..out])
   }
 }
 
-fn build_row(coffee: CoffeeData) {
-  html.tr(row_class(coffee.id), [
-    one_table_element(coffee.name),
-    one_table_element(coffee.roaster),
-    one_table_element(coffee.roast_date),
+fn build_row(id: String, coffee: CoffeeData) {
+  html.tr(row_class(id), [
+    table_element(coffee.name),
+    table_element(coffee.roaster),
+    table_element(coffee.roast_date),
   ])
 }
 
@@ -62,15 +65,15 @@ fn one_th_for_header(value: String) {
   ])
 }
 
-fn one_table_row(value: List(String), out: List(vdom.Element(a))) {
+fn table_row(value: List(String), out: List(vdom.Element(a))) {
   case value {
     [] -> out
-    [h] -> [one_table_element(h), ..out]
-    [h, ..t] -> one_table_row(t, [one_table_element(h), ..out])
+    [h] -> [table_element(h), ..out]
+    [h, ..t] -> table_row(t, [table_element(h), ..out])
   }
 }
 
-fn one_table_element(value: String) {
+fn table_element(value: String) {
   html.td([class("border-b border-lime-200 text-left p-2")], [
     html.p([class("")], [html.text(value)]),
   ])

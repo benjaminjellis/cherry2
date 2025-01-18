@@ -1,8 +1,9 @@
 import cherry/model.{type Model, Model}
 import cherry/msg.{type Msg, OnRouteChange, UserClickedRow}
 import cherry/route.{About, CoffeeOverview, Coffees, Experiments, Splash}
-import cherry/types.{CoffeeData, CoffeesData}
+import cherry/types.{CoffeeData}
 import cherry/views/about
+import cherry/views/coffee_overview
 import cherry/views/coffees
 import cherry/views/experiments
 import cherry/views/splash
@@ -27,24 +28,21 @@ fn view(model: Model) -> element.Element(Msg) {
     Splash -> splash.view(model)
     Experiments -> experiments.view(model)
     About -> about.view(model)
-    CoffeeOverview(id) -> about.view(model)
+    CoffeeOverview(id) -> coffee_overview.view(model, id)
   }
 }
 
 fn init(_flags) -> #(Model, effect.Effect(Msg)) {
   let data =
-    CoffeesData(coffees: [
-      CoffeeData(
-        id: "1234",
-        name: "Lot #15",
-        roaster: "Special Guests",
-        roast_date: "1/1/25",
-      ),
-      CoffeeData(
-        id: "45678",
-        name: "La Senda",
-        roaster: "Plot",
-        roast_date: "1/1/25",
+    dict.from_list([
+      #(
+        "1234",
+        CoffeeData(
+          id: "1234",
+          name: "Lot #15",
+          roaster: "Special Guests",
+          roast_date: "1/1/25",
+        ),
       ),
     ])
   let dict = dict.new()
@@ -74,3 +72,14 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
     )
   }
 }
+// fn get_quote() -> effect.Effect(msg.Msg) {
+//   let url = "https://dummyjson.com/quotes/random"
+//   let decoder =
+//     dynamic.decode2(
+//       Quote,
+//       dynamic.field("author", dynamic.string),
+//       dynamic.field("quote", dynamic.string),
+//     )
+//
+//   lustre_http.get(url, lustre_http.expect_json(decoder, ApiUpdatedQuote))
+// }
