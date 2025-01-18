@@ -13,6 +13,10 @@ pub fn main_div_class() {
   class("min-h-100 flex flex-col")
 }
 
+pub fn main_class() {
+  class("flex-grow p-4 p-4 flex items-center justify-center")
+}
+
 pub fn header() {
   html.header(
     [class("flex justify-between items-center p-4 border-b-2 border-red-200")],

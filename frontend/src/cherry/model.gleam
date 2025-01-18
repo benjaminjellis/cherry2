@@ -7,5 +7,6 @@ pub type Model {
     coffees: dict.Dict(String, CoffeeData),
     current_route: Route,
     experiments_by_coffee: dict.Dict(String, Experiments),
+    is_user_logged_in: Bool,
   )
 }

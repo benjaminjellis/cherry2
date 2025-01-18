@@ -9,10 +9,10 @@ import cherry/views/coffee_overview
 import cherry/views/coffees
 import cherry/views/experiments
 import cherry/views/not_found
+import cherry/views/profile
 import cherry/views/splash
 import gleam/dict
 import gleam/io
-import gleam/option.{None, Some}
 import gleam/uri.{type Uri}
 import lustre
 import lustre/effect
@@ -35,7 +35,7 @@ fn view(model: Model) -> element.Element(Msg) {
     About -> about.view(model)
     CoffeeOverview(id) -> coffee_overview.view(model, id)
     NotFound -> not_found.view(model)
-    Profile -> about.view(model)
+    Profile -> profile.view(model)
   }
 }
 
@@ -58,7 +58,7 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
     Ok(uri) -> map_uri_to_route(uri)
     Error(_) -> Splash
   }
-  #(Model(data, load_route, dict), modem.init(on_route_change))
+  #(Model(data, load_route, dict, False), modem.init(on_route_change))
 }
 
 fn on_route_change(uri: Uri) -> Msg {
@@ -92,8 +92,8 @@ pub fn update_on_route_change(
       let route_string = route |> route.to_string
       io.debug(route_string)
       [
-        modem.replace(route_string, None, None),
-        // modem.push(route_string, None, None),
+        // modem.replace(route_string, None, None),
+      // modem.push(route_string, None, None),
       ]
     }
     True -> []
