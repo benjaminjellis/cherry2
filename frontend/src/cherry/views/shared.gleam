@@ -1,6 +1,9 @@
+import cherry/msg
+import cherry/route
 import lustre/attribute.{class}
 import lustre/element
 import lustre/element/html
+import lustre/event
 
 pub fn view_class() {
   class("bg-yellow-50 min-h-svh flex flex-col")
@@ -10,14 +13,14 @@ pub fn main_div_class() {
   class("min-h-100 flex flex-col")
 }
 
-pub fn header() -> element.Element(a) {
+pub fn header() {
   html.header(
     [class("flex justify-between items-center p-4 border-b-2 border-red-200")],
     [
       html.div([class("text-2xl font-bold")], [
-        html.a([attribute.href("./splash")], [
+        html.a([attribute.href("./")], [
           html.img([
-            class("object-cover h-14 w-30 "),
+            class("object-cover h-14 w-30 animate-wiggle"),
             attribute.src("./priv/static/assets/logo.png"),
           ]),
         ]),
@@ -27,25 +30,25 @@ pub fn header() -> element.Element(a) {
   )
 }
 
-fn li_item(text: String, href: String) {
-  html.li([class("text-2xl font-bold")], [
-    html.a(
-      [
-        class("hover:underline hover:decoration-pink-300 decoration-4"),
-        attribute.href(href),
-      ],
-      [html.text(text)],
-    ),
-  ])
+fn li_item(text: String, route: route.Route) {
+  html.li(
+    [
+      class(
+        "text-2xl font-bold hover:underline hover:decoration-pink-300 decoration-4",
+      ),
+      event.on_click(msg.OnRouteChange(route)),
+    ],
+    [html.text(text)],
+  )
 }
 
 fn header_nav() {
   html.nav([], [
     html.ul([class("flex space-x-4")], [
-      li_item("coffees ☕", "./coffees"),
-      li_item("experiments 🧪", "./experiments"),
-      li_item("about 🔎", "./about"),
-      li_item("profile 👤", "/profile"),
+      li_item("coffees ☕", route.Coffees),
+      li_item("experiments 🧪", route.Experiments),
+      li_item("about 🔎", route.About),
+      li_item("profile 👤", route.Profile),
     ]),
   ])
 }

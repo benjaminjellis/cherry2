@@ -653,14 +653,14 @@ video {
   border-top-width: 2px;
 }
 
-.border-blue-500 {
-  --tw-border-opacity: 1;
-  border-color: rgb(59 130 246 / var(--tw-border-opacity));
-}
-
 .border-lime-200 {
   --tw-border-opacity: 1;
   border-color: rgb(217 249 157 / var(--tw-border-opacity));
+}
+
+.border-pink-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(249 168 212 / var(--tw-border-opacity));
 }
 
 .border-red-200 {

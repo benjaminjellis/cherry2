@@ -1,4 +1,5 @@
-import cherry/msg.{type Msg}
+import cherry/msg
+import cherry/route
 import cherry/types.{type CoffeeData}
 import gleam/dict
 import gleam/list
@@ -12,7 +13,10 @@ fn table_class() {
 }
 
 fn row_class(coffee_id: String) {
-  [class("hover:bg-pink-300"), event.on_click(msg.UserClickedRow(coffee_id))]
+  [
+    class("hover:bg-pink-300"),
+    event.on_click(msg.OnRouteChange(route.CoffeeOverview(coffee_id))),
+  ]
 }
 
 pub fn coffees_table(

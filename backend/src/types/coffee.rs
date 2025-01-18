@@ -10,6 +10,10 @@ impl CoffeeId {
     pub(crate) fn as_uuid(&self) -> &Uuid {
         &self.0
     }
+
+    pub(crate) fn new() -> Self {
+        Self(Uuid::now_v7())
+    }
 }
 
 impl From<Uuid> for CoffeeId {

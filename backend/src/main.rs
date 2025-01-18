@@ -1,12 +1,17 @@
 mod api;
+mod coffee;
 mod db;
 mod error;
 mod state;
 mod types;
 
+use api::routes::add_new_coffee;
 pub(crate) use error::CherryError;
 
-use axum::{routing::get, Router};
+use axum::{
+    routing::{get, post},
+    Router,
+};
 
 use state::AppState;
 #[cfg(not(target_env = "msvc"))]
@@ -41,6 +46,7 @@ async fn main() -> Result<(), CherryError> {
     let app_state = AppState { db_pool };
 
     let app = Router::new()
+        .route("/coffee", post(add_new_coffee))
         .route("/", get(|| async { "Hello, World!" }))
         .with_state(app_state);
 

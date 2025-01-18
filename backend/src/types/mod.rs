@@ -11,6 +11,10 @@ impl UserId {
         Self(Uuid::now_v7())
     }
 
+    pub(crate) const fn test_user() -> Self {
+        Self(Uuid::nil())
+    }
+
     pub(crate) fn as_uuid(&self) -> &Uuid {
         &self.0
     }
