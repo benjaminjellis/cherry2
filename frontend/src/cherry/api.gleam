@@ -1,8 +1,9 @@
 import cherry/dtos.{CoffeeDto}
+import cherry/model
 import cherry/msg
 import decode/zero as decode
 import gleam/dynamic.{type Dynamic}
-import gleam/http.{Get, Http}
+import gleam/http.{Get}
 import gleam/http/request.{Request}
 import gleam/option.{None}
 import lustre/effect
@@ -32,16 +33,17 @@ fn decode_json_to_coffee_dto(data: Dynamic) {
   decode.run(data, decode.list(decoder))
 }
 
-pub fn get_coffees() -> effect.Effect(msg.Msg) {
-  let host = "0.0.0.0:3000"
-
+pub fn get_coffees(config: model.Config) -> effect.Effect(msg.Msg) {
   let request =
     Request(
       method: Get,
       headers: [],
       body: "",
-      scheme: Http,
-      host: host,
+      scheme: case config.use_https {
+        True -> http.Https
+        False -> http.Http
+      },
+      host: config.host,
       port: None,
       path: "/api/coffee",
       query: None,

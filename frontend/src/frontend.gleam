@@ -45,7 +45,7 @@ fn view(model: Model) -> element.Element(Msg) {
 }
 
 fn init(_flags) -> #(Model, effect.Effect(Msg)) {
-  io.debug("init!")
+  let config = model.get_confg()
   let data = dict.new()
   let dict = dict.new()
   let load_route = case modem.initial_uri() {
@@ -53,8 +53,8 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
     Error(_) -> Splash
   }
   #(
-    Model(data, load_route, dict, False, model.LogInInput(None, None)),
-    effect.batch([modem.init(on_route_change), api.get_coffees()]),
+    Model(data, load_route, dict, False, model.LogInInput(None, None), config),
+    effect.batch([modem.init(on_route_change), api.get_coffees(config)]),
   )
 }
 
@@ -79,12 +79,12 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
     msg.EmiaiInput(input) -> {
       let log_in_input =
         model.LogInInput(..model.log_in_input, email: Some(input))
-      #(Model(..model, log_in_input: log_in_input), effect.none())
+      #(Model(..model, log_in_input:), effect.none())
     }
     msg.PasswordInput(input) -> {
       let log_in_input =
         model.LogInInput(..model.log_in_input, password: Some(input))
-      #(Model(..model, log_in_input: log_in_input), effect.none())
+      #(Model(..model, log_in_input:), effect.none())
     }
     msg.UserRequestedSignUp(_, _) -> {
       // TODO: go through sign up flow
@@ -153,14 +153,3 @@ pub fn update_on_route_change(
     )
   }
 }
-// fn get_quote() -> effect.Effect(msg.Msg) {
-//   let url = "https://dummyjson.com/quotes/random"
-//   let decoder =
-//     dynamic.decode2(
-//       Quote,
-//       dynamic.field("author", dynamic.string),
-//       dynamic.field("quote", dynamic.string),
-//     )
-//
-//   lustre_http.get(url, lustre_http.expect_json(decoder, ApiUpdatedQuote))
-// }

@@ -1,7 +1,6 @@
 import cherry/msg
 import cherry/route
 import cherry/types.{type CoffeeData}
-import gleam/dict
 import gleam/list
 import lustre/attribute.{class}
 import lustre/element/html
