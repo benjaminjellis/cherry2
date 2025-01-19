@@ -98,7 +98,7 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
 
       #(Model(..model, log_in_input: log_in_input), effect.none())
     }
-    msg.CoffeeApiRsesponse(Ok(coffee)) -> {
+    msg.CoffeesApiRsesponse(Ok(coffee)) -> {
       let coffees =
         coffee
         |> list.try_map(types.convert_dto_to_coffee_data)
@@ -109,6 +109,20 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
             |> list.map(to_tuple)
             |> dict.from_list
           #(Model(..model, coffees:), effect.none())
+        }
+        Error(_) -> #(model, effect.none())
+      }
+    }
+    msg.CoffeesApiRsesponse(Error(error)) -> {
+      io.debug(error)
+      #(model, effect.none())
+    }
+    msg.CoffeeApiRsesponse(Ok(coffee)) -> {
+      let coffee = coffee |> types.convert_dto_to_coffee_data
+      case coffee {
+        Ok(coffee) -> {
+          let new_coffees = model.coffees |> dict.insert(coffee.id, coffee)
+          #(Model(..model, coffees: new_coffees), effect.none())
         }
         Error(_) -> #(model, effect.none())
       }

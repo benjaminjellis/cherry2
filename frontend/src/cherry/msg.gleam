@@ -8,5 +8,6 @@ pub type Msg {
   PasswordInput(value: String)
   UserRequestedLogIn(password: String, email: String)
   UserRequestedSignUp(password: String, email: String)
-  CoffeeApiRsesponse(Result(List(CoffeeDto), HttpError))
+  CoffeesApiRsesponse(Result(List(CoffeeDto), HttpError))
+  CoffeeApiRsesponse(Result(CoffeeDto, HttpError))
 }
