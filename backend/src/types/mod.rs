@@ -7,6 +7,7 @@ pub(crate) struct UserId(Uuid);
 
 impl UserId {
     #[cfg(test)]
+    #[allow(dead_code)]
     pub(crate) fn new() -> Self {
         Self(Uuid::now_v7())
     }

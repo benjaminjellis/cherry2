@@ -6,11 +6,13 @@ mod roaster;
 mod state;
 mod types;
 
-use api::routes::{add_new_coffee, add_new_roaster, get_coffees, get_roaster};
+use api::routes::{
+    add_new_coffee, add_new_roaster, delete_coffee, get_coffee, get_coffees, get_roaster,
+};
 pub(crate) use error::CherryError;
 
 use axum::{
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 
@@ -48,6 +50,7 @@ async fn main() -> Result<(), CherryError> {
 
     let app = Router::new()
         .route("/coffee", post(add_new_coffee).get(get_coffees))
+        .route("/coffee/{coffee_id}", delete(delete_coffee).get(get_coffee))
         .route("/roaster", post(add_new_roaster))
         .route("/roaster/{roaster_id}", get(get_roaster))
         .route("/", get(|| async { "Hello, World!" }))

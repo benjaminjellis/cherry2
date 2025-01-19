@@ -25,6 +25,17 @@ pub(crate) async fn add_new_coffee(
     Ok(Json(resp))
 }
 
+pub(crate) async fn get_coffee(
+    State(state): State<AppState>,
+    Path(coffee_id): Path<Uuid>,
+) -> Result<Json<CoffeeDto>, CherryError> {
+    let pool = &state.db_pool;
+    let coffee = coffee::get_coffee(pool, &coffee_id.into(), &UserId::test_user()).await?;
+    coffee
+        .map(|coffee| Json(coffee.into()))
+        .ok_or(CherryError::NotFound("Coffee not found".into()))
+}
+
 pub(crate) async fn get_coffees(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<CoffeeDto>>, CherryError> {
@@ -50,4 +61,13 @@ pub(crate) async fn get_roaster(
     let pool = &state.db_pool;
     let roaster = roaster::get_roaster(pool, roster_id.into()).await?;
     Ok(Json(roaster.into()))
+}
+
+pub(crate) async fn delete_coffee(
+    State(state): State<AppState>,
+    Path(coffee_id): Path<Uuid>,
+) -> Result<(), CherryError> {
+    let pool = &state.db_pool;
+    coffee::delete_coffee(pool, &coffee_id.into(), &UserId::test_user()).await?;
+    Ok(())
 }

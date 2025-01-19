@@ -172,7 +172,7 @@ mod test {
     use sqlx::PgPool;
 
     use crate::{
-        db::coffee::{add_coffee, delete_coffee, Coffee},
+        db::coffee::{add_coffee, delete_coffee},
         types::UserId,
     };
     use uuid::Uuid;
