@@ -1,9 +1,10 @@
+import cherry/api
 import cherry/model.{type Model, Model}
 import cherry/msg.{type Msg}
 import cherry/route.{
   About, CoffeeOverview, Coffees, Experiments, NotFound, Profile, SignUp, Splash,
 }
-import cherry/types.{CoffeeData}
+import cherry/types
 import cherry/views/about
 import cherry/views/coffee_overview
 import cherry/views/coffees
@@ -14,6 +15,7 @@ import cherry/views/sign_up
 import cherry/views/splash
 import gleam/dict
 import gleam/io
+import gleam/list
 import gleam/option.{None, Some}
 import gleam/uri.{type Uri}
 import lustre
@@ -44,18 +46,7 @@ fn view(model: Model) -> element.Element(Msg) {
 
 fn init(_flags) -> #(Model, effect.Effect(Msg)) {
   io.debug("init!")
-  let data =
-    dict.from_list([
-      #(
-        "1234",
-        CoffeeData(
-          id: "1234",
-          name: "Lot #15",
-          roaster: "Special Guests",
-          roast_date: "1/1/25",
-        ),
-      ),
-    ])
+  let data = dict.new()
   let dict = dict.new()
   let load_route = case modem.initial_uri() {
     Ok(uri) -> map_uri_to_route(uri)
@@ -63,7 +54,7 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
   }
   #(
     Model(data, load_route, dict, False, model.LogInInput(None, None)),
-    modem.init(on_route_change),
+    effect.batch([modem.init(on_route_change), api.get_coffees()]),
   )
 }
 
@@ -107,7 +98,24 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
 
       #(Model(..model, log_in_input: log_in_input), effect.none())
     }
+    msg.CoffeeApiRsesponse(Ok(coffee)) -> {
+      let coffees =
+        coffee
+        |> list.map(types.convert_dto_to_coffee_data)
+        |> list.map(to_tuple)
+        |> dict.from_list
+
+      #(Model(..model, coffees:), effect.none())
+    }
+    msg.CoffeeApiRsesponse(Error(error)) -> {
+      io.debug(error)
+      #(model, effect.none())
+    }
   }
+}
+
+fn to_tuple(a: types.CoffeeData) {
+  #(a.id, a)
 }
 
 pub fn update_on_route_change(

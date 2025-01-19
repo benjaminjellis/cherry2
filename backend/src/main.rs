@@ -12,9 +12,11 @@ use api::routes::{
 pub(crate) use error::CherryError;
 
 use axum::{
+    http::Method,
     routing::{delete, get, post},
     Router,
 };
+use tower_http::cors::{Any, CorsLayer};
 
 use state::AppState;
 #[cfg(not(target_env = "msvc"))]
@@ -55,7 +57,13 @@ async fn main() -> Result<(), CherryError> {
         .route("/roaster/{roaster_id}", get(get_roaster))
         .with_state(app_state);
 
-    let app = Router::new().nest("/api", api_router);
+    let cors = CorsLayer::new()
+        // allow `GET` and `POST` when accessing the resource
+        .allow_methods([Method::GET, Method::POST, Method::DELETE])
+        // allow requests from any origin
+        .allow_origin(Any);
+
+    let app = Router::new().nest("/api", api_router).layer(cors);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
