@@ -15,7 +15,19 @@ fn decode_json_to_coffee_dto(data: Dynamic) {
     use roaster <- decode.field("roaster", decode.string)
     use roaster_name <- decode.field("roaster_name", decode.string)
     use roast_date <- decode.field("roast_date", decode.string)
-    decode.success(CoffeeDto(name:, id:, roaster:, roaster_name:, roast_date:))
+    use origin <- decode.field("origin", decode.string)
+    use varetial <- decode.field("varetial", decode.string)
+    use in_current_rotation <- decode.field("in_current_rotation", decode.bool)
+    decode.success(CoffeeDto(
+      name:,
+      id:,
+      roaster:,
+      roaster_name:,
+      roast_date:,
+      origin:,
+      varetial:,
+      in_current_rotation:,
+    ))
   }
   decode.run(data, decode.list(decoder))
 }

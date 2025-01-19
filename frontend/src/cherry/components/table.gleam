@@ -7,9 +7,10 @@ import lustre/attribute.{class}
 import lustre/element/html
 import lustre/event
 import lustre/internals/vdom
+import rada/date
 
 fn table_class() {
-  class("table-auto border-collapse w-full")
+  class("table-auto border-collapse w-full mb-4")
 }
 
 fn row_class(coffee_id: String) {
@@ -19,12 +20,10 @@ fn row_class(coffee_id: String) {
   ]
 }
 
-pub fn coffees_table(
-  data: dict.Dict(String, CoffeeData),
-) -> vdom.Element(msg.Msg) {
+pub fn coffees_table(data: List(CoffeeData)) -> vdom.Element(msg.Msg) {
   html.table([table_class()], [
     html.thead([], header()),
-    html.tbody([], list.reverse(rows(data |> dict.to_list, []))),
+    html.tbody([], list.reverse(rows(data, []))),
   ])
 }
 
@@ -32,15 +31,16 @@ fn header() {
   [
     one_th_for_header("name"),
     one_th_for_header("roaster"),
+    one_th_for_header("origin"),
+    one_th_for_header("varetial"),
     one_th_for_header("roast date"),
   ]
 }
 
-fn rows(coffees: List(#(String, CoffeeData)), out: List(vdom.Element(msg.Msg))) {
+fn rows(coffees: List(CoffeeData), out: List(vdom.Element(msg.Msg))) {
   case coffees {
     [] -> out
-    [h] -> [build_row(h.0, h.1), ..out]
-    [h, ..t] -> rows(t, [build_row(h.0, h.1), ..out])
+    [h, ..t] -> rows(t, [build_row(h.id, h), ..out])
   }
 }
 
@@ -48,7 +48,9 @@ fn build_row(id: String, coffee: CoffeeData) {
   html.tr(row_class(id), [
     table_element(coffee.name),
     table_element(coffee.roaster),
-    table_element(coffee.roast_date),
+    table_element(coffee.origin),
+    table_element(coffee.varetial),
+    table_element(date.to_iso_string(coffee.roast_date)),
   ])
 }
 

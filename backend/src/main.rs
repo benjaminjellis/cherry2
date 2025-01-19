@@ -21,7 +21,7 @@ use tower_http::cors::{Any, CorsLayer};
 use state::AppState;
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
@@ -31,10 +31,7 @@ static GLOBAL: Jemalloc = Jemalloc;
 async fn main() -> Result<(), CherryError> {
     dotenvy::dotenv().ok();
 
-    let filter_layer = EnvFilter::new("backend=trace");
-
     tracing_subscriber::registry()
-        .with(filter_layer)
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -64,6 +61,8 @@ async fn main() -> Result<(), CherryError> {
         .allow_origin(Any);
 
     let app = Router::new().nest("/api", api_router).layer(cors);
+
+    tracing::info!("test");
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await

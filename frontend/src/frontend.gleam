@@ -101,11 +101,17 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
     msg.CoffeeApiRsesponse(Ok(coffee)) -> {
       let coffees =
         coffee
-        |> list.map(types.convert_dto_to_coffee_data)
-        |> list.map(to_tuple)
-        |> dict.from_list
-
-      #(Model(..model, coffees:), effect.none())
+        |> list.try_map(types.convert_dto_to_coffee_data)
+      case coffees {
+        Ok(coffees) -> {
+          let coffees =
+            coffees
+            |> list.map(to_tuple)
+            |> dict.from_list
+          #(Model(..model, coffees:), effect.none())
+        }
+        Error(_) -> #(model, effect.none())
+      }
     }
     msg.CoffeeApiRsesponse(Error(error)) -> {
       io.debug(error)
