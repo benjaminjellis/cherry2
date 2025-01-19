@@ -36,6 +36,7 @@ fn add_new_coffee_button() {
         class(
           "px-4 py-2 text-sm bg-lime-200 text-white rounded hover:bg-lime-500 transition",
         ),
+        attribute.alt("Add a new coffee"),
       ],
       [html.text("➕")],
     ),

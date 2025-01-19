@@ -30,16 +30,24 @@ fn spinner() {
   ])
 }
 
+fn coffee_overview(data: types.CoffeeData) {
+  html.div([class("flex justify-center items-center")], [
+    html.div([], [html.h1([], [html.text(data.name)])]),
+  ])
+}
+
 fn main_content(
   coffee_data: Result(CoffeeData, Nil),
   _experiment,
 ) -> element.Element(msg.Msg) {
   let _ = case coffee_data {
-    Error(_) -> "a"
-    Ok(_) -> "a"
+    Error(_) ->
+      html.main([class("flex-grow p-4")], [
+        html.div([main_div_class()], [spinner()]),
+      ])
+    Ok(coffee) ->
+      html.main([class("flex-grow p-4")], [
+        html.div([main_div_class()], [coffee_overview(coffee)]),
+      ])
   }
-
-  html.main([class("flex-grow p-4")], [
-    html.div([main_div_class()], [spinner()]),
-  ])
 }

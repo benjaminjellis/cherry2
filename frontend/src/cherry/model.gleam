@@ -13,7 +13,7 @@ pub type Config {
 
 pub fn get_confg() {
   let env = envoy.get("CHERRY_ENV") |> result.unwrap("local")
-  let local = Local(False, "")
+  let local = Local(False, "0.0.0.0:3000")
   case env {
     "prod" -> Prod(True, "TODO")
     "local" -> local
