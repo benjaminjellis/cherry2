@@ -48,13 +48,14 @@ async fn main() -> Result<(), CherryError> {
 
     let app_state = AppState { db_pool };
 
-    let app = Router::new()
+    let api_router = Router::new()
         .route("/coffee", post(add_new_coffee).get(get_coffees))
         .route("/coffee/{coffee_id}", delete(delete_coffee).get(get_coffee))
         .route("/roaster", post(add_new_roaster))
         .route("/roaster/{roaster_id}", get(get_roaster))
-        .route("/", get(|| async { "Hello, World!" }))
         .with_state(app_state);
+
+    let app = Router::new().nest("/api", api_router);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await

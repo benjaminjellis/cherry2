@@ -9,6 +9,7 @@ pub type Route {
   CoffeeOverview(id: String)
   NotFound
   Profile
+  SignUp
 }
 
 pub fn to_string(route: Route) {
@@ -19,6 +20,7 @@ pub fn to_string(route: Route) {
     Experiments -> "./experiments"
     NotFound -> "./not_found"
     Splash -> "/"
+    SignUp -> "signuo"
     Profile -> "./profile"
   }
 }
@@ -41,5 +43,6 @@ pub fn to_uri(route: Route) {
     NotFound -> uri.Uri(None, None, None, None, "/not_found", None, None)
     Splash -> uri.Uri(None, None, None, None, "/", None, None)
     Profile -> uri.Uri(None, None, None, None, "/profile", None, None)
+    SignUp -> uri.Uri(None, None, None, None, "sign_up", None, None)
   }
 }

@@ -1,7 +1,7 @@
 import cherry/model.{type Model, Model}
-import cherry/msg.{type Msg, EmiaiInput, LogInFormSubmit, OnRouteChange}
+import cherry/msg.{type Msg}
 import cherry/route.{
-  About, CoffeeOverview, Coffees, Experiments, NotFound, Profile, Splash,
+  About, CoffeeOverview, Coffees, Experiments, NotFound, Profile, SignUp, Splash,
 }
 import cherry/types.{CoffeeData}
 import cherry/views/about
@@ -10,6 +10,7 @@ import cherry/views/coffees
 import cherry/views/experiments
 import cherry/views/not_found
 import cherry/views/profile
+import cherry/views/sign_up
 import cherry/views/splash
 import gleam/dict
 import gleam/io
@@ -37,6 +38,7 @@ fn view(model: Model) -> element.Element(Msg) {
     CoffeeOverview(id) -> coffee_overview.view(model, id)
     NotFound -> not_found.view(model)
     Profile -> profile.view(model)
+    SignUp -> sign_up.view(model)
   }
 }
 
@@ -66,7 +68,7 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
 }
 
 fn on_route_change(uri: Uri) -> Msg {
-  map_uri_to_route(uri) |> OnRouteChange
+  map_uri_to_route(uri) |> msg.OnRouteChange
 }
 
 fn map_uri_to_route(uri: Uri) -> route.Route {
@@ -82,8 +84,8 @@ fn map_uri_to_route(uri: Uri) -> route.Route {
 
 pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
   case msg {
-    OnRouteChange(route) -> update_on_route_change(model, route)
-    EmiaiInput(input) -> {
+    msg.OnRouteChange(route) -> update_on_route_change(model, route)
+    msg.EmiaiInput(input) -> {
       let log_in_input =
         model.LogInInput(..model.log_in_input, email: Some(input))
       #(Model(..model, log_in_input: log_in_input), effect.none())
@@ -93,7 +95,11 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
         model.LogInInput(..model.log_in_input, password: Some(input))
       #(Model(..model, log_in_input: log_in_input), effect.none())
     }
-    LogInFormSubmit(password, email) -> {
+    msg.UserRequestedSignUp(_, _) -> {
+      // TODO: go through sign up flow
+      #(model, effect.none())
+    }
+    msg.UserRequestedLogIn(password, email) -> {
       io.debug(password)
       io.debug(email)
       // TODO: dispatch this the backend
@@ -122,7 +128,7 @@ pub fn update_on_route_change(
   }
 
   case route {
-    About | Coffees | NotFound | Splash | Experiments | Profile -> #(
+    About | Coffees | NotFound | Splash | Experiments | Profile | SignUp -> #(
       Model(..model, current_route: route),
       effect.batch(effects),
     )

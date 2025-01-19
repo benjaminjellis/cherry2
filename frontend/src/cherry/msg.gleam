@@ -4,5 +4,6 @@ pub type Msg {
   OnRouteChange(Route)
   EmiaiInput(value: String)
   PasswordInput(value: String)
-  LogInFormSubmit(password: String, email: String)
+  UserRequestedLogIn(password: String, email: String)
+  UserRequestedSignUp(password: String, email: String)
 }
