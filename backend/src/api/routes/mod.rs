@@ -5,10 +5,11 @@ use crate::{
     AppState, CherryError,
 };
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     Json,
 };
 use chrono::Utc;
+use serde::Deserialize;
 use uuid::Uuid;
 
 use super::dtos::{CoffeeDto, NewRoasterDto, RoasterDto};
@@ -63,12 +64,26 @@ pub(crate) async fn get_roaster(
     Ok(Json(roaster.into()))
 }
 
+#[derive(Deserialize)]
+pub(crate) struct RoasterSearch {
+    pub(crate) name: String,
+}
+
+pub(crate) async fn get_roasters_by_name(
+    State(state): State<AppState>,
+    Query(search): Query<RoasterSearch>,
+) -> Result<Json<Vec<RoasterDto>>, CherryError> {
+    let pool = &state.db_pool;
+    let roaster = roaster::get_roasters_by_name(pool, search.name).await?;
+    Ok(Json(roaster.into_iter().map(Into::into).collect()))
+}
+
 pub(crate) async fn get_roasters_for_user(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<RoasterDto>>, CherryError> {
     let pool = &state.db_pool;
-    let user_is = UserId::test_user();
-    let roaster = roaster::get_roasters_for_user(pool, user_is).await?;
+    let user_id = UserId::test_user();
+    let roaster = roaster::get_roasters_for_user(pool, user_id).await?;
     Ok(Json(roaster.into_iter().map(Into::into).collect()))
 }
 

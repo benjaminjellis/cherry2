@@ -9,6 +9,13 @@ use crate::{
     CherryError,
 };
 
+pub(crate) async fn get_roasters_by_name(
+    pool: &PgPool,
+    roaster_name: String,
+) -> Result<Vec<Roaster>, CherryError> {
+    Ok(db_roaster::search_roasters_by_name(pool, roaster_name).await?)
+}
+
 pub(crate) async fn add_new_roaster(
     pool: &PgPool,
     new_roaster: NewRoaster,

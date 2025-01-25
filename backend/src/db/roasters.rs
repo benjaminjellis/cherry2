@@ -22,6 +22,24 @@ impl From<RoasterDb> for Roaster {
     }
 }
 
+pub(crate) async fn search_roasters_by_name(
+    pool: &PgPool,
+    name: String,
+) -> Result<Vec<Roaster>, CherryDbError> {
+    let pattern = format!("{name}%");
+    Ok(sqlx::query_as!(
+        RoasterDb,
+        r#"select * from roasters where roasters.name ilike $1 limit 10;"#,
+        pattern
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|err| CherryDbError::Select(err.to_string()))?
+    .into_iter()
+    .map(|a| a.into())
+    .collect())
+}
+
 pub(crate) async fn get_roasters_for_user(
     pool: &PgPool,
     user_id: &UserId,
