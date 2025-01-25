@@ -22,6 +22,16 @@ impl From<RoasterDb> for Roaster {
     }
 }
 
+pub(crate) async fn get_all_roasters(pool: &PgPool) -> Result<Vec<Roaster>, CherryDbError> {
+    Ok(sqlx::query_as!(RoasterDb, r#"select * from roasters;"#)
+        .fetch_all(pool)
+        .await
+        .map_err(|err| CherryDbError::Select(err.to_string()))?
+        .into_iter()
+        .map(|a| a.into())
+        .collect())
+}
+
 pub(crate) async fn search_roasters_by_name(
     pool: &PgPool,
     name: String,

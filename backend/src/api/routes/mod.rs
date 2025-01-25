@@ -55,6 +55,14 @@ pub(crate) async fn add_new_roaster(
     Ok(Json(roaster.into()))
 }
 
+pub(crate) async fn get_all_roasters(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<RoasterDto>>, CherryError> {
+    let pool = &state.db_pool;
+    let all_roasters = roaster::get_all_roasters(pool).await?;
+    Ok(Json(all_roasters.into_iter().map(Into::into).collect()))
+}
+
 pub(crate) async fn get_roaster(
     State(state): State<AppState>,
     Path(roster_id): Path<Uuid>,

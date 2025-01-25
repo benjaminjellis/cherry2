@@ -16,7 +16,7 @@ pub fn main_div_class() {
 }
 
 pub fn main_class() {
-  class("flex-grow p-4 p-4 flex items-center justify-center")
+  class("p-8 flex justify-center")
 }
 
 pub fn header() {

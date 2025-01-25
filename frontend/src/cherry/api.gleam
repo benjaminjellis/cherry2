@@ -68,8 +68,8 @@ pub fn get_coffee(coffee_id: String, config: model.Config) {
   )
 }
 
-pub fn get_rasters(config: model.Config) {
-  let request = create_request(config, Get, "", "/api/roaster")
+pub fn get_all_rasters(config: model.Config) {
+  let request = create_request(config, Get, "", "/api/roaster/all")
   lustre_http.send(
     request,
     lustre_http.expect_json(decode_roasters, msg.RoastersApiResponse),

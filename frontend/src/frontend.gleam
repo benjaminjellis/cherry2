@@ -74,7 +74,7 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
     effect.batch([
       modem.init(on_route_change),
       api.get_coffees(config),
-      api.get_rasters(config),
+      api.get_all_rasters(config),
     ]),
   )
 }

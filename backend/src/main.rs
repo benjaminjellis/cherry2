@@ -7,8 +7,8 @@ mod state;
 mod types;
 
 use api::routes::{
-    add_new_coffee, add_new_roaster, delete_coffee, get_coffee, get_coffees, get_roaster,
-    get_roasters_by_name, get_roasters_for_user,
+    add_new_coffee, add_new_roaster, delete_coffee, get_all_roasters, get_coffee, get_coffees,
+    get_roaster, get_roasters_by_name, get_roasters_for_user,
 };
 pub(crate) use error::CherryError;
 
@@ -53,6 +53,7 @@ async fn main() -> Result<(), CherryError> {
         .route("/coffee/{coffee_id}", delete(delete_coffee).get(get_coffee))
         .route("/roaster", post(add_new_roaster).get(get_roasters_for_user))
         .route("/roaster/search", get(get_roasters_by_name))
+        .route("/roaster/all", get(get_all_roasters))
         .route("/roaster/{roaster_id}", get(get_roaster))
         .with_state(app_state);
 
