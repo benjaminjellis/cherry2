@@ -1,7 +1,10 @@
 use sqlx::{postgres::PgQueryResult, PgPool};
 use uuid::Uuid;
 
-use crate::types::roaster::{NewRoaster, Roaster, RoasterId};
+use crate::types::{
+    roaster::{NewRoaster, Roaster, RoasterId},
+    UserId,
+};
 
 use super::CherryDbError;
 
@@ -17,6 +20,28 @@ impl From<RoasterDb> for Roaster {
             name: value.name,
         }
     }
+}
+
+pub(crate) async fn get_roasters_for_user(
+    pool: &PgPool,
+    user_id: &UserId,
+) -> Result<Vec<Roaster>, CherryDbError> {
+    Ok(sqlx::query_as!(
+        RoasterDb,
+        r#"select
+            *
+        from
+            roasters
+        where
+            roasters.id in (select distinct roaster from coffees where user_id = $1 );"#,
+        user_id.as_uuid()
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|err| CherryDbError::Select(err.to_string()))?
+    .into_iter()
+    .map(|a| a.into())
+    .collect())
 }
 
 pub(crate) async fn add_roaster(

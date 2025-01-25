@@ -10,18 +10,20 @@ pub type Route {
   NotFound
   Profile
   SignUp
+  AddCoffee
 }
 
 pub fn to_string(route: Route) {
   case route {
-    About -> "./about"
-    CoffeeOverview(id) -> "./coffee/" <> id
-    Coffees -> "./coffee"
-    Experiments -> "./experiments"
-    NotFound -> "./not_found"
-    Splash -> "/"
-    SignUp -> "signuo"
-    Profile -> "./profile"
+    About -> "/about"
+    CoffeeOverview(id) -> "coffee/" <> id
+    Coffees -> "/coffee"
+    Experiments -> "/experiments"
+    NotFound -> "/not_found"
+    Splash -> ""
+    SignUp -> "/signup"
+    AddCoffee -> "add_coffee"
+    Profile -> "/profile"
   }
 }
 
@@ -43,6 +45,7 @@ pub fn to_uri(route: Route) {
     NotFound -> uri.Uri(None, None, None, None, "/not_found", None, None)
     Splash -> uri.Uri(None, None, None, None, "/", None, None)
     Profile -> uri.Uri(None, None, None, None, "/profile", None, None)
-    SignUp -> uri.Uri(None, None, None, None, "sign_up", None, None)
+    SignUp -> uri.Uri(None, None, None, None, "/sign_up", None, None)
+    AddCoffee -> uri.Uri(None, None, None, None, "/add_coffee", None, None)
   }
 }

@@ -1,4 +1,4 @@
-import cherry/dtos.{type CoffeeDto}
+import cherry/dtos.{type CoffeeDto, type RoasterDto}
 import gleam/result
 import rada/date
 
@@ -33,4 +33,12 @@ pub type Experiments {
 
 pub type Experiment {
   Experiment(id: String)
+}
+
+pub type RoasterData {
+  RoasterData(id: String, name: String)
+}
+
+pub fn convert_dto_to_roaster_data(dto: RoasterDto) {
+  RoasterData(id: dto.id, name: dto.name)
 }

@@ -1,6 +1,7 @@
 import cherry/components/table
 import cherry/model.{type Model}
 import cherry/msg
+import cherry/route
 import cherry/types.{type CoffeeData}
 import cherry/views/shared.{footer, header, main_div_class, view_class}
 import gleam/dict
@@ -8,6 +9,7 @@ import gleam/list
 import lustre/attribute.{class}
 import lustre/element
 import lustre/element/html
+import lustre/event
 import rada/date
 
 fn filter_data(data: dict.Dict(String, CoffeeData)) {
@@ -37,6 +39,7 @@ fn add_new_coffee_button() {
           "px-4 py-2 text-sm bg-lime-200 text-white rounded hover:bg-lime-500 transition",
         ),
         attribute.alt("Add a new coffee"),
+        event.on_click(msg.OnRouteChange(route.AddCoffee)),
       ],
       [html.text("➕")],
     ),

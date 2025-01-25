@@ -1,5 +1,7 @@
 pub(crate) mod coffee;
+pub(crate) mod experiment;
 pub(crate) mod roaster;
+
 use uuid::Uuid;
 
 #[derive(Debug, Copy, Clone)]

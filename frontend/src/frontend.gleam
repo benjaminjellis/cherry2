@@ -2,10 +2,12 @@ import cherry/api
 import cherry/model.{type Model, Model}
 import cherry/msg.{type Msg}
 import cherry/route.{
-  About, CoffeeOverview, Coffees, Experiments, NotFound, Profile, SignUp, Splash,
+  About, AddCoffee, CoffeeOverview, Coffees, Experiments, NotFound, Profile,
+  SignUp, Splash,
 }
 import cherry/types
 import cherry/views/about
+import cherry/views/add_coffee
 import cherry/views/coffee_overview
 import cherry/views/coffees
 import cherry/views/experiments
@@ -41,20 +43,39 @@ fn view(model: Model) -> element.Element(Msg) {
     NotFound -> not_found.view(model)
     Profile -> profile.view(model)
     SignUp -> sign_up.view(model)
+    AddCoffee -> add_coffee.view(model)
   }
 }
 
 fn init(_flags) -> #(Model, effect.Effect(Msg)) {
+  io.debug("init")
   let config = model.get_confg()
-  let data = dict.new()
+  let coffees = dict.new()
   let dict = dict.new()
+  let roasters = dict.new()
   let load_route = case modem.initial_uri() {
     Ok(uri) -> map_uri_to_route(uri)
     Error(_) -> Splash
   }
   #(
-    Model(data, load_route, dict, False, model.LogInInput(None, None), config),
-    effect.batch([modem.init(on_route_change), api.get_coffees(config)]),
+    Model(
+      coffees,
+      roasters,
+      load_route,
+      dict,
+      False,
+      model.LogInInput(None, None),
+      config,
+    ),
+    // on init: 
+    // - create the modem router
+    // - get coffees from the api
+    // - get roasters from the api
+    effect.batch([
+      modem.init(on_route_change),
+      api.get_coffees(config),
+      api.get_rasters(config),
+    ]),
   )
 }
 
@@ -69,6 +90,8 @@ fn map_uri_to_route(uri: Uri) -> route.Route {
     ["experiments"] -> Experiments
     ["about"] -> About
     ["not_found"] -> NotFound
+    ["profile"] -> Profile
+    ["add_coffee"] -> AddCoffee
     _ -> Splash
   }
 }
@@ -76,6 +99,10 @@ fn map_uri_to_route(uri: Uri) -> route.Route {
 pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
   case msg {
     msg.OnRouteChange(route) -> update_on_route_change(model, route)
+    msg.GetRoasters -> {
+      // TODO: use this to get roasters
+      #(model, effect.none())
+    }
     msg.EmiaiInput(input) -> {
       let log_in_input =
         model.LogInInput(..model.log_in_input, email: Some(input))
@@ -98,6 +125,19 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
 
       #(Model(..model, log_in_input: log_in_input), effect.none())
     }
+    msg.RoastersApiResponse(Ok(roasters)) -> {
+      let roasters_dict =
+        roasters
+        |> list.map(types.convert_dto_to_roaster_data)
+        |> list.map(fn(x) { #(x.id, x) })
+        |> dict.from_list
+      io.debug(roasters_dict)
+      #(Model(..model, roasters: roasters_dict), effect.none())
+    }
+    msg.RoastersApiResponse(Error(error)) -> {
+      io.debug(error)
+      #(model, effect.none())
+    }
     msg.CoffeesApiRsesponse(Ok(coffee)) -> {
       let coffees =
         coffee
@@ -106,13 +146,14 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
         Ok(coffees) -> {
           let coffees =
             coffees
-            |> list.map(to_tuple)
+            |> list.map(fn(x) { #(x.id, x) })
             |> dict.from_list
           #(Model(..model, coffees:), effect.none())
         }
         Error(_) -> #(model, effect.none())
       }
     }
+
     msg.CoffeesApiRsesponse(Error(error)) -> {
       io.debug(error)
       #(model, effect.none())
@@ -134,10 +175,6 @@ pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
   }
 }
 
-fn to_tuple(a: types.CoffeeData) {
-  #(a.id, a)
-}
-
 pub fn update_on_route_change(
   model: Model,
   route: route.Route,
@@ -148,15 +185,22 @@ pub fn update_on_route_change(
       let route_string = route |> route.to_string
       io.debug(route_string)
       [
-        // modem.replace(route_string, None, None),
-      // modem.push(route_string, None, None),
+        modem.replace(route_string, None, None),
+        // modem.push(route_string, None, None),
       ]
     }
     True -> []
   }
 
   case route {
-    About | Coffees | NotFound | Splash | Experiments | Profile | SignUp -> #(
+    About
+    | Coffees
+    | NotFound
+    | Splash
+    | Experiments
+    | Profile
+    | SignUp
+    | AddCoffee -> #(
       Model(..model, current_route: route),
       effect.batch(effects),
     )

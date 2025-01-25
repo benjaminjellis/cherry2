@@ -63,6 +63,15 @@ pub(crate) async fn get_roaster(
     Ok(Json(roaster.into()))
 }
 
+pub(crate) async fn get_roasters_for_user(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<RoasterDto>>, CherryError> {
+    let pool = &state.db_pool;
+    let user_is = UserId::test_user();
+    let roaster = roaster::get_roasters_for_user(pool, user_is).await?;
+    Ok(Json(roaster.into_iter().map(Into::into).collect()))
+}
+
 pub(crate) async fn delete_coffee(
     State(state): State<AppState>,
     Path(coffee_id): Path<Uuid>,

@@ -23,7 +23,7 @@ create table experiments(
 	id uuid primary key not null,
   date date not null,
 	coffee_id uuid not null,
-	variant text not null,
+	brew_method text not null,
 	grinder text not null,
 	grind_setting text not null,
 	recipe text not null,

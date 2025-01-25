@@ -26,7 +26,9 @@ pub fn get_confg() {
 
 pub type Model {
   Model(
+    /// Coffees
     coffees: dict.Dict(String, CoffeeData),
+    roasters: dict.Dict(String, types.RoasterData),
     current_route: Route,
     experiments_by_coffee: dict.Dict(String, Experiments),
     is_user_logged_in: Bool,

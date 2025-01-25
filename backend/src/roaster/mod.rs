@@ -2,7 +2,10 @@ use sqlx::PgPool;
 
 use crate::{
     db::roasters as db_roaster,
-    types::roaster::{NewRoaster, Roaster, RoasterId},
+    types::{
+        roaster::{NewRoaster, Roaster, RoasterId},
+        UserId,
+    },
     CherryError,
 };
 
@@ -24,4 +27,12 @@ pub(crate) async fn get_roaster(
     roaster.ok_or(CherryError::NotFound(
         "Roaster with specified id not found".into(),
     ))
+}
+
+/// Get all the roasters that a user has logged a coffee for before
+pub(crate) async fn get_roasters_for_user(
+    pool: &PgPool,
+    user_id: UserId,
+) -> Result<Vec<Roaster>, CherryError> {
+    Ok(db_roaster::get_roasters_for_user(pool, &user_id).await?)
 }
