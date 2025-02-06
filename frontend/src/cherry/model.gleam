@@ -33,10 +33,20 @@ pub type Model {
     experiments_by_coffee: dict.Dict(String, Experiments),
     is_user_logged_in: Bool,
     log_in_input: LogInInput,
+    new_coffee_input: NewCoffeeInput,
     config: Config,
   )
 }
 
 pub type LogInInput {
   LogInInput(email: Option(String), password: Option(String))
+}
+
+pub type NewCoffeeInput {
+  NewCoffeeInput(
+    varietal: Option(String),
+    name: Option(String),
+    origin: Option(String),
+    tasting_notes: Option(String),
+  )
 }

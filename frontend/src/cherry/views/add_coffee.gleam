@@ -1,8 +1,6 @@
 import cherry/model.{type Model}
 import cherry/msg
-import cherry/views/shared.{
-  footer, header, main_class, main_div_class, view_class,
-}
+import cherry/views/shared.{footer, header, main_class, view_class}
 import gleam/dict
 import gleam/list
 import lustre/attribute.{class}

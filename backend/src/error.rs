@@ -7,7 +7,6 @@ use thiserror::Error;
 use tracing::error;
 
 use crate::db::CherryDbError;
-
 #[derive(Error, Debug)]
 pub(crate) enum CherryError {
     #[error("Encountered error when setting up server: `{0}`")]

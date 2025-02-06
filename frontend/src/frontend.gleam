@@ -65,6 +65,7 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
       dict,
       False,
       model.LogInInput(None, None),
+      model.NewCoffeeInput(None, None, None, None),
       config,
     ),
     // on init: 
@@ -96,9 +97,18 @@ fn map_uri_to_route(uri: Uri) -> route.Route {
   }
 }
 
-pub fn update(model: Model, msg: msg.Msg) -> #(Model, effect.Effect(msg.Msg)) {
-  case msg {
+pub fn update(
+  model: Model,
+  message: msg.Msg,
+) -> #(Model, effect.Effect(msg.Msg)) {
+  case message {
     msg.OnRouteChange(route) -> update_on_route_change(model, route)
+    msg.AddNewCoffee(add_new_coffee_msg) -> {
+      #(
+        msg.process_add_new_coffee_message(model, add_new_coffee_msg),
+        effect.none(),
+      )
+    }
     msg.GetRoasters -> {
       // TODO: use this to get roasters
       #(model, effect.none())
