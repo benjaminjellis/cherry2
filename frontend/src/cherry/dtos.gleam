@@ -8,6 +8,7 @@ pub type CoffeeDto {
     origin: String,
     varetial: String,
     in_current_rotation: Bool,
+    process: String,
   )
 }
 

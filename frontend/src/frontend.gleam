@@ -19,6 +19,7 @@ import gleam/dict
 import gleam/io
 import gleam/list
 import gleam/option.{None, Some}
+import gleam/result
 import gleam/uri.{type Uri}
 import lustre
 import lustre/effect
@@ -43,7 +44,11 @@ fn view(model: Model) -> element.Element(Msg) {
     NotFound -> not_found.view(model)
     Profile -> profile.view(model)
     SignUp -> sign_up.view(model)
-    AddCoffee -> add_coffee.view(model)
+    AddCoffee ->
+      add_coffee.view(
+        model |> model.get_list_of_roasters,
+        model.new_coffee_input,
+      )
   }
 }
 
@@ -65,7 +70,7 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
       dict,
       False,
       model.LogInInput(None, None),
-      model.NewCoffeeInput(None, None, None, None),
+      model.new_coffee_input(),
       config,
     ),
     // on init: 
@@ -103,7 +108,13 @@ pub fn update(
 ) -> #(Model, effect.Effect(msg.Msg)) {
   case message {
     msg.OnRouteChange(route) -> update_on_route_change(model, route)
-    msg.AddNewCoffee(add_new_coffee_msg) -> {
+    msg.UserAddedNewCoffee(new_coffee) -> {
+      #(
+        Model(..model, current_route: route.Coffees),
+        effect.batch([api.add_new_coffee(model.config, new_coffee)]),
+      )
+    }
+    msg.AddNewCoffeeInput(add_new_coffee_msg) -> {
       #(
         msg.process_add_new_coffee_message(model, add_new_coffee_msg),
         effect.none(),
@@ -163,24 +174,47 @@ pub fn update(
         Error(_) -> #(model, effect.none())
       }
     }
-
     msg.CoffeesApiRsesponse(Error(error)) -> {
       io.debug(error)
       #(model, effect.none())
     }
-    msg.CoffeeApiRsesponse(Ok(coffee)) -> {
-      let coffee = coffee |> types.convert_dto_to_coffee_data
-      case coffee {
+    msg.CoffeeApiRsesponse(resp) -> {
+      case resp {
         Ok(coffee) -> {
-          let new_coffees = model.coffees |> dict.insert(coffee.id, coffee)
-          #(Model(..model, coffees: new_coffees), effect.none())
+          let coffee = coffee |> types.convert_dto_to_coffee_data
+          case coffee {
+            Ok(coffee) -> {
+              let new_coffees = model.coffees |> dict.insert(coffee.id, coffee)
+              #(Model(..model, coffees: new_coffees), effect.none())
+            }
+            Error(_) -> #(model, effect.none())
+          }
         }
-        Error(_) -> #(model, effect.none())
+        Error(error) -> {
+          io.debug(error)
+          #(model, effect.none())
+        }
       }
     }
-    msg.CoffeeApiRsesponse(Error(error)) -> {
-      io.debug(error)
-      #(model, effect.none())
+    msg.NewCoffeeApiResponse(resp) -> {
+      io.debug("Got Resp")
+      case resp {
+        Ok(new_coffee) -> {
+          io.debug(new_coffee)
+          let coffee = new_coffee |> types.convert_dto_to_coffee_data
+          case coffee {
+            Ok(coffee) -> {
+              let new_coffees = model.coffees |> dict.insert(coffee.id, coffee)
+              #(Model(..model, coffees: new_coffees), effect.none())
+            }
+            Error(_) -> #(model, effect.none())
+          }
+        }
+        Error(error) -> {
+          io.debug(error)
+          #(model, effect.none())
+        }
+      }
     }
   }
 }
@@ -201,19 +235,29 @@ pub fn update_on_route_change(
     }
     True -> []
   }
-
   case route {
-    About
-    | Coffees
-    | NotFound
-    | Splash
-    | Experiments
-    | Profile
-    | SignUp
-    | AddCoffee -> #(
+    About | Coffees | NotFound | Splash | Experiments | Profile | SignUp -> #(
       Model(..model, current_route: route),
       effect.batch(effects),
     )
+    AddCoffee -> {
+      let roaster =
+        model
+        |> model.get_list_of_roasters
+        |> list.first
+        |> result.unwrap(types.RoasterData("", ""))
+      #(
+        Model(
+          ..model,
+          current_route: route,
+          new_coffee_input: model.NewCoffeeInput(
+            ..model.new_coffee_input,
+            roaster: Some(roaster.id),
+          ),
+        ),
+        effect.batch(effects),
+      )
+    }
     // TODO: here the effect should be: if there is no ecxperiment data fetch it
     CoffeeOverview(_) -> #(
       Model(..model, current_route: route),

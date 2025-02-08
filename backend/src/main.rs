@@ -17,6 +17,7 @@ use axum::{
     routing::{delete, get, post},
     Router,
 };
+use http::header::{AUTHORIZATION, CONTENT_TYPE};
 use tower_http::cors::{Any, CorsLayer};
 
 use state::AppState;
@@ -60,7 +61,8 @@ async fn main() -> Result<(), CherryError> {
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
         .allow_methods([Method::GET, Method::POST, Method::DELETE])
-        // allow requests from any origin
+        .allow_headers([AUTHORIZATION, CONTENT_TYPE])
+        // TODO: restrict the origin when deployed
         .allow_origin(Any);
 
     let app = Router::new().nest("/api", api_router).layer(cors);

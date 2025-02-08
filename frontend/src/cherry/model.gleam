@@ -3,7 +3,7 @@ import cherry/types.{type CoffeeData, type Experiments}
 import envoy
 import gleam/dict
 import gleam/io
-import gleam/option.{type Option}
+import gleam/option.{type Option, None}
 import gleam/result
 
 pub type Config {
@@ -38,6 +38,10 @@ pub type Model {
   )
 }
 
+pub fn get_list_of_roasters(model: Model) -> List(types.RoasterData) {
+  model.roasters |> dict.values
+}
+
 pub type LogInInput {
   LogInInput(email: Option(String), password: Option(String))
 }
@@ -48,5 +52,12 @@ pub type NewCoffeeInput {
     name: Option(String),
     origin: Option(String),
     tasting_notes: Option(String),
+    roaster: Option(String),
+    process: Option(String),
+    roast_date: Option(String),
   )
+}
+
+pub fn new_coffee_input() {
+  NewCoffeeInput(None, None, None, None, None, None, None)
 }

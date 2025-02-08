@@ -1,22 +1,73 @@
-import cherry/model.{type Model}
+import cherry/model
 import cherry/msg
+import cherry/types
 import cherry/views/shared.{footer, header, main_class, view_class}
-import gleam/dict
 import gleam/list
+import gleam/result
 import lustre/attribute.{class}
 import lustre/element
 import lustre/element/html
 import lustre/event
 
-pub fn view(model: Model) -> element.Element(msg.Msg) {
-  html.div([view_class()], [header(), main_content(model), footer()])
+pub fn view(
+  list_of_roasters: List(types.RoasterData),
+  new_coffee_inputs: model.NewCoffeeInput,
+) -> element.Element(msg.Msg) {
+  html.div([view_class()], [
+    header(),
+    main_content(list_of_roasters, new_coffee_inputs),
+    footer(),
+  ])
 }
 
-fn main_content(model: Model) -> element.Element(msg.Msg) {
+fn main_content(
+  list_of_roasters: List(types.RoasterData),
+  new_coffee_inputs: model.NewCoffeeInput,
+) -> element.Element(msg.Msg) {
   html.main([main_class()], [
-    html.div([class("")], [
+    html.div([], [
       html.div([class("p-6 bg-pink-300 rounded-lg shadow-md")], [
-        html.form([], [first_row(model), second_row(), third_row()]),
+        html.form([event.on_submit(msg.UserAddedNewCoffee(new_coffee_inputs))], [
+          first_row(list_of_roasters),
+          second_row(),
+          third_row(),
+          foruth_row(),
+          submit(),
+        ]),
+      ]),
+    ]),
+  ])
+}
+
+fn third_row() {
+  html.div([class("flex space-x-4")], [
+    html.div([class("m-4")], [
+      html.label([class("block mb-2 text-sm font-medium")], [
+        html.text("Process"),
+      ]),
+      html.input([
+        event.on_input(fn(x) { msg.AddNewCoffeeInput(msg.ProcessInput(x)) }),
+        attribute.type_("process"),
+        attribute.id("process"),
+        attribute.class(
+          "w-full p-2 border border-red-200 rounded-md focus:outline-none focus:ring-2 focus:ring-lime-200 focus:border-transparent",
+        ),
+        attribute.placeholder("e.g. Naturla"),
+        attribute.required(True),
+      ]),
+    ]),
+    html.div([class("m-4")], [
+      html.label([class("block mb-2 text-sm font-medium")], [
+        html.text("Roast Date"),
+      ]),
+      html.input([
+        event.on_input(fn(x) { msg.AddNewCoffeeInput(msg.RoastDate(x)) }),
+        attribute.type_("date"),
+        attribute.id("roast-date"),
+        attribute.class(
+          "w-full p-2 border border-red-200 rounded-md focus:outline-none focus:ring-2 focus:ring-lime-200 focus:border-transparent",
+        ),
+        attribute.required(True),
       ]),
     ]),
   ])
@@ -29,7 +80,7 @@ fn second_row() {
         html.text("Varetial"),
       ]),
       html.input([
-        event.on_input(msg.EmiaiInput),
+        event.on_input(fn(x) { msg.AddNewCoffeeInput(msg.VaretialInput(x)) }),
         attribute.type_("varetial"),
         attribute.id("varetial"),
         attribute.class(
@@ -44,7 +95,7 @@ fn second_row() {
         html.text("Origin"),
       ]),
       html.input([
-        event.on_input(msg.EmiaiInput),
+        event.on_input(fn(x) { msg.AddNewCoffeeInput(msg.OriginInput(x)) }),
         attribute.type_("origin"),
         attribute.id("origin"),
         attribute.class(
@@ -57,14 +108,14 @@ fn second_row() {
   ])
 }
 
-fn third_row() {
+fn foruth_row() {
   html.div([class("mt-4")], [
     html.div([class("m-4")], [
       html.label([class("block mb-2 text-sm font-medium")], [
         html.text("Tasting Notes"),
       ]),
       html.input([
-        event.on_input(msg.EmiaiInput),
+        event.on_input(fn(x) { msg.AddNewCoffeeInput(msg.TastingNotesInput(x)) }),
         attribute.type_("Tasting Notes"),
         attribute.id("Tasting Notes"),
         attribute.class(
@@ -77,15 +128,12 @@ fn third_row() {
   ])
 }
 
-fn first_row(model: Model) {
-  let roasters_list =
-    model.roasters |> dict.to_list |> list.map(fn(a) { { a.1 }.name })
-
+fn first_row(list_of_roasters: List(types.RoasterData)) {
   html.div([class("flex space-x-4")], [
     html.div([class("m-4")], [
       html.label([class("block mb-2 text-sm font-medium")], [html.text("Name")]),
       html.input([
-        event.on_input(msg.EmiaiInput),
+        event.on_input(fn(x) { msg.AddNewCoffeeInput(msg.NameInput(x)) }),
         attribute.type_("name"),
         attribute.id("name"),
         attribute.class(
@@ -101,15 +149,39 @@ fn first_row(model: Model) {
       ]),
       html.select(
         [
+          event.on_input(fn(roaster_name) {
+            let roaster =
+              list_of_roasters
+              |> list.find(fn(roaster) { roaster.name == roaster_name })
+              // HACK: the list is only ever built from the data returned by the server so 
+              // we should never actually need to insert the case provided
+              |> result.unwrap(types.RoasterData("", ""))
+            msg.AddNewCoffeeInput(msg.RoasterInput(roaster.id))
+          }),
           attribute.id("roaster"),
           attribute.name("roaster"),
           class(
             "flex-1 p-2 border border-red-200 rounded-md focus:outline-none focus:ring-2 focus:ring-lime-200 focus:border-transparent",
           ),
         ],
-        create_options(roasters_list, []),
+        create_options(
+          list_of_roasters |> list.map(fn(roaster) { roaster.name }),
+          [],
+        ),
       ),
     ]),
+  ])
+}
+
+fn submit() {
+  html.div([class("m-4")], [
+    html.button(
+      [
+        attribute.type_("submit"),
+        class("w-full px-4 py-2 bg-lime-200 rounded-md hover:bg-lime-500"),
+      ],
+      [html.text("🚀")],
+    ),
   ])
 }
 

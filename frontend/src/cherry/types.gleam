@@ -11,6 +11,7 @@ pub type CoffeeData {
     origin: String,
     varetial: String,
     in_current_rotation: Bool,
+    process: String,
   )
 }
 
@@ -24,6 +25,7 @@ pub fn convert_dto_to_coffee_data(dto: CoffeeDto) {
     varetial: dto.varetial,
     roast_date: date,
     in_current_rotation: dto.in_current_rotation,
+    process: dto.process,
   ))
 }
 

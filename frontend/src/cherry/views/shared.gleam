@@ -82,13 +82,7 @@ pub fn footer() -> element.Element(a) {
           attribute.target("_blank"),
           class("mx-2"),
         ],
-        [
-          html.img([
-            class("h-7 w-7"),
-            attribute.src("https://cdn-icons-png.flaticon.com/512/25/25231.png"),
-            attribute.alt("Kofi"),
-          ]),
-        ],
+        [html.text("🙏")],
       ),
     ]),
   ])

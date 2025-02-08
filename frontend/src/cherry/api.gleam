@@ -5,6 +5,8 @@ import decode/zero as decode
 import gleam/dynamic.{type Dynamic}
 import gleam/http.{type Method, Get}
 import gleam/http/request.{Request}
+import gleam/io
+import gleam/json
 import gleam/option.{None}
 import lustre_http
 
@@ -23,6 +25,8 @@ fn coffee_decoder() {
   use origin <- decode.field("origin", decode.string)
   use varetial <- decode.field("varetial", decode.string)
   use in_current_rotation <- decode.field("in_current_rotation", decode.bool)
+  use process <- decode.field("process", decode.string)
+
   decode.success(CoffeeDto(
     name:,
     id:,
@@ -32,6 +36,7 @@ fn coffee_decoder() {
     origin:,
     varetial:,
     in_current_rotation:,
+    process:,
   ))
 }
 
@@ -44,6 +49,7 @@ fn decode_coffees(data: Dynamic) {
 }
 
 fn decode_coffee(data: Dynamic) {
+  io.debug("Decoding...")
   decode.run(data, coffee_decoder())
 }
 
@@ -85,15 +91,51 @@ pub fn get_coffees(config: model.Config) {
   )
 }
 
+pub fn add_new_coffee(config: model.Config, new_coffee: model.NewCoffeeInput) {
+  let body = new_coffee_input_to_string(new_coffee)
+  io.debug(body)
+  let request = create_request(config, http.Post, body, "/api/coffee")
+  io.debug(request)
+  lustre_http.send(
+    request,
+    lustre_http.expect_json(decode_coffee, msg.NewCoffeeApiResponse),
+  )
+}
+
+// TODO: might be better to raise an error here rather than just defaulting to an empty string / value
+fn new_coffee_input_to_string(new_coffee: model.NewCoffeeInput) -> String {
+  let json_object =
+    json.object([
+      #("name", json.string(new_coffee.name |> option.unwrap(""))),
+      #("roaster", json.string(new_coffee.roaster |> option.unwrap(""))),
+      #("roast_date", json.string(new_coffee.roast_date |> option.unwrap(""))),
+      #("origin", json.string(new_coffee.origin |> option.unwrap(""))),
+      #("varetial", json.string(new_coffee.varietal |> option.unwrap(""))),
+      #("process", json.string(new_coffee.process |> option.unwrap(""))),
+      #(
+        "tasting_notes",
+        json.string(new_coffee.tasting_notes |> option.unwrap("")),
+      ),
+      #("liked", json.bool(False)),
+      #("in_current_rotation", json.bool(True)),
+    ])
+  json_object |> json.to_string
+}
+
 fn create_request(
   config: model.Config,
   method: Method,
   body: String,
   path: String,
 ) {
+  let headers = case method {
+    http.Post -> [#("Content-Type", "application/json")]
+
+    _ -> []
+  }
   Request(
     method:,
-    headers: [],
+    headers:,
     body:,
     scheme: case config.use_https {
       True -> http.Https

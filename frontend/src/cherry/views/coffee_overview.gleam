@@ -6,6 +6,7 @@ import gleam/dict
 import lustre/attribute.{class}
 import lustre/element
 import lustre/element/html
+import rada/date
 
 pub fn view(model: Model, id: String) -> element.Element(msg.Msg) {
   let coffee_data = model.coffees |> dict.get(id)
@@ -31,8 +32,51 @@ fn spinner() {
 }
 
 fn coffee_overview(data: types.CoffeeData) {
-  html.div([class("flex justify-center items-center")], [
-    html.div([], [html.h1([], [html.text(data.name)])]),
+  html.div([class("p-6 bg-pink-300 rounded-lg shadow-md")], [
+    html.h2([class("text-xl font-bold mb-4")], [html.text(data.name)]),
+    three_element_row(
+      "Roaster:",
+      data.roaster,
+      "Vareital:",
+      data.varetial,
+      "Origin:",
+      data.origin,
+    ),
+    three_element_row(
+      "Process:",
+      data.process,
+      "Roast Date:",
+      data.roast_date |> date.to_iso_string,
+      "",
+      "",
+    ),
+  ])
+}
+
+fn three_element_row(
+  header_one: String,
+  data_one: String,
+  header_two: String,
+  data_two: String,
+  header_three: String,
+  data_three: String,
+) {
+  html.div([class("flex space-x-4")], [
+    html.div([class("m-4")], [
+      html.p([class("text-sm font-medium text-bold")], [
+        html.text(header_one <> " " <> data_one),
+      ]),
+    ]),
+    html.div([class("m-4")], [
+      html.p([class("text-sm font-medium text-bold")], [
+        html.text(header_two <> " " <> data_two),
+      ]),
+    ]),
+    html.div([class("m-4")], [
+      html.p([class("text-sm font-medium text-bold")], [
+        html.text(header_three <> " " <> data_three),
+      ]),
+    ]),
   ])
 }
 
@@ -46,8 +90,8 @@ fn main_content(
         html.div([main_div_class()], [spinner()]),
       ])
     Ok(coffee) ->
-      html.main([class("flex-grow p-4")], [
-        html.div([main_div_class()], [coffee_overview(coffee)]),
+      html.main([class("p-8 flex justify-center")], [
+        html.div([], [coffee_overview(coffee)]),
       ])
   }
 }
