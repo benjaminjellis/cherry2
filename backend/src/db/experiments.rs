@@ -1,4 +1,5 @@
 use crate::types::{
+    coffee::CoffeeId,
     experiment::{Experiment, ExperimentId},
     UserId,
 };
@@ -89,4 +90,49 @@ pub(crate) async fn delete_experiment(
     } else {
         Ok(())
     }
+}
+
+pub(crate) async fn get_experiment(
+    pool: &PgPool,
+    user_id: &UserId,
+    experiment_id: &ExperimentId,
+) -> Result<Option<Experiment>, CherryDbError> {
+    let a = sqlx::query_as!(
+        ExperimentDb,
+        r#"
+            select * from experiments
+            where experiments.user_id = $1 and experiments.id = $2"#,
+        user_id.as_uuid(),
+        experiment_id.as_uuid()
+    )
+    .fetch_optional(pool)
+    .await
+    .map_err(|err| CherryDbError::Select(err.to_string()))?
+    .map(TryInto::try_into)
+    .transpose()?;
+
+    Ok(a)
+}
+
+pub(crate) async fn get_experiments_for_coffee(
+    pool: &PgPool,
+    user_id: &UserId,
+    coffee_id: &CoffeeId,
+) -> Result<Vec<Experiment>, CherryDbError> {
+    let experiments = sqlx::query_as!(
+        ExperimentDb,
+        r#"
+            select * from experiments
+            where experiments.user_id = $1 and experiments.coffee_id = $2"#,
+        user_id.as_uuid(),
+        coffee_id.as_uuid()
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|err| CherryDbError::Select(err.to_string()))?
+    .into_iter()
+    .map(TryInto::try_into)
+    .collect::<Result<_, CherryDbError>>()?;
+
+    Ok(experiments)
 }

@@ -120,18 +120,33 @@ pub(crate) async fn add_experiment(
     Ok((StatusCode::CREATED, Json(added_experiment)))
 }
 
-pub(crate) async fn get_experiments(
+pub(crate) async fn get_experiments_for_coffee(
     State(state): State<AppState>,
     Path(coffee_id): Path<Uuid>,
-) -> Result<(), CherryError> {
-    Ok(())
+) -> Result<Json<Vec<ExperimentDto>>, CherryError> {
+    let pool = &state.db_pool;
+    let user_id = UserId::test_user();
+    let experiments = experiments::get_experiments_for_coffee(pool, &user_id, &coffee_id.into())
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect::<Vec<_>>();
+    Ok(Json(experiments))
 }
 
 pub(crate) async fn get_experiment(
     State(state): State<AppState>,
-    Path((coffee_id, experiment_id)): Path<(Uuid, Uuid)>,
-) -> Result<(), CherryError> {
-    Ok(())
+    Path((_, experiment_id)): Path<(Uuid, Uuid)>,
+) -> Result<Json<ExperimentDto>, CherryError> {
+    let pool = &state.db_pool;
+    let user_id = UserId::test_user();
+    let experiment = experiments::get_experiment(pool, &user_id, &experiment_id.into())
+        .await?
+        .map(Into::into);
+    match experiment {
+        Some(experiment) => Ok(Json(experiment)),
+        None => Err(CherryError::NotFound(experiment_id.to_string())),
+    }
 }
 
 pub(crate) async fn delete_experiment(

@@ -9,8 +9,8 @@ mod types;
 
 use api::routes::{
     add_experiment, add_new_coffee, add_new_roaster, delete_coffee, delete_experiment,
-    get_all_roasters, get_coffee, get_coffees, get_experiment, get_experiments, get_roaster,
-    get_roasters_by_name, get_roasters_for_user,
+    get_all_roasters, get_coffee, get_coffees, get_experiment, get_experiments_for_coffee,
+    get_roaster, get_roasters_by_name, get_roasters_for_user,
 };
 
 pub(crate) use error::CherryError;
@@ -56,7 +56,7 @@ async fn main() -> Result<(), CherryError> {
         .route("/coffee/{coffee_id}", delete(delete_coffee).get(get_coffee))
         .route(
             "/coffee/{coffee_id}/experiment",
-            get(get_experiments).post(add_experiment),
+            get(get_experiments_for_coffee).post(add_experiment),
         )
         .route(
             "/coffee/{coffee_id}/experiment/{experiment_id}",
