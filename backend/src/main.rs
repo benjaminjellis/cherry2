@@ -2,14 +2,17 @@ mod api;
 mod coffee;
 mod db;
 mod error;
+mod experiments;
 mod roaster;
 mod state;
 mod types;
 
 use api::routes::{
-    add_new_coffee, add_new_roaster, delete_coffee, get_all_roasters, get_coffee, get_coffees,
-    get_roaster, get_roasters_by_name, get_roasters_for_user,
+    add_experiment, add_new_coffee, add_new_roaster, delete_coffee, delete_experiment,
+    get_all_roasters, get_coffee, get_coffees, get_experiment, get_experiments, get_roaster,
+    get_roasters_by_name, get_roasters_for_user,
 };
+
 pub(crate) use error::CherryError;
 
 use axum::{
@@ -37,21 +40,28 @@ async fn main() -> Result<(), CherryError> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let database_url = std::env::var("DATABASE_URL")
-        .map_err(|_| CherryError::Setup("Failed to get db url from env".to_string()))?;
+    let database_url = std::env::var("DATABASE_URL").map_err(CherryError::EnvVar)?;
 
     let db_pool = db::create_db_pool(&database_url).await?;
 
     db::MIGRATOR
         .run(&db_pool)
         .await
-        .map_err(|err| CherryError::Setup(format!("Failed to run migration {}", err)))?;
+        .map_err(CherryError::Migration)?;
 
     let app_state = AppState { db_pool };
 
     let api_router = Router::new()
         .route("/coffee", post(add_new_coffee).get(get_coffees))
         .route("/coffee/{coffee_id}", delete(delete_coffee).get(get_coffee))
+        .route(
+            "/coffee/{coffee_id}/experiment",
+            get(get_experiments).post(add_experiment),
+        )
+        .route(
+            "/coffee/{coffee_id}/experiment/{experiment_id}",
+            delete(delete_experiment).get(get_experiment),
+        )
         .route("/roaster", post(add_new_roaster).get(get_roasters_for_user))
         .route("/roaster/search", get(get_roasters_by_name))
         .route("/roaster/all", get(get_all_roasters))

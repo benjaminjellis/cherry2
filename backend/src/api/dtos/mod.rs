@@ -1,5 +1,6 @@
 use crate::types::{
     coffee::{Coffee, CoffeeId, NewCoffee},
+    experiment::{BrewMethod, Experiment, NewExperiment},
     roaster::{NewRoaster, Roaster, RoasterId},
 };
 use chrono::{DateTime, NaiveDate, Utc};
@@ -104,6 +105,91 @@ impl NewRoasterDto {
         NewRoaster {
             id,
             name: self.name,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug, Copy, Clone)]
+pub(crate) enum BrewMethodDto {
+    Espresso,
+    Filter,
+    MokaPot,
+}
+
+impl From<BrewMethodDto> for BrewMethod {
+    fn from(value: BrewMethodDto) -> Self {
+        match value {
+            BrewMethodDto::Espresso => Self::Espresso,
+            BrewMethodDto::Filter => Self::Filter,
+            BrewMethodDto::MokaPot => Self::MokaPot,
+        }
+    }
+}
+
+impl From<BrewMethod> for BrewMethodDto {
+    fn from(value: BrewMethod) -> Self {
+        match value {
+            BrewMethod::Espresso => Self::Espresso,
+            BrewMethod::Filter => Self::Filter,
+            BrewMethod::MokaPot => Self::MokaPot,
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub(crate) struct ExperimentDto {
+    pub(crate) id: Uuid,
+    pub(crate) date: NaiveDate,
+    pub(crate) coffee_id: Uuid,
+    pub(crate) brew_method: BrewMethodDto,
+    pub(crate) grinder: String,
+    pub(crate) grind_setting: String,
+    pub(crate) recipe: String,
+    pub(crate) liked: bool,
+    pub(crate) notes: String,
+    pub(crate) added: DateTime<Utc>,
+    pub(crate) last_updated: DateTime<Utc>,
+}
+
+impl From<Experiment> for ExperimentDto {
+    fn from(value: Experiment) -> Self {
+        Self {
+            id: *value.id.as_uuid(),
+            date: value.date,
+            coffee_id: *value.coffee_id.as_uuid(),
+            brew_method: value.brew_method.into(),
+            grinder: value.grinder,
+            grind_setting: value.grind_setting,
+            recipe: value.recipe,
+            liked: value.liked,
+            notes: value.notes,
+            added: value.added,
+            last_updated: value.last_updated,
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub(crate) struct NewExperimentDto {
+    pub(crate) date: Option<NaiveDate>,
+    pub(crate) brew_method: BrewMethodDto,
+    pub(crate) grinder: String,
+    pub(crate) grind_setting: String,
+    pub(crate) recipe: String,
+    pub(crate) liked: bool,
+    pub(crate) notes: String,
+}
+
+impl From<NewExperimentDto> for NewExperiment {
+    fn from(value: NewExperimentDto) -> Self {
+        Self {
+            date: value.date,
+            brew_method: value.brew_method.into(),
+            grinder: value.grinder,
+            grind_setting: value.grind_setting,
+            recipe: value.recipe,
+            liked: value.liked,
+            notes: value.notes,
         }
     }
 }

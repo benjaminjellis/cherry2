@@ -1,18 +1,21 @@
 use crate::{
     api::dtos::NewCoffeeRequestDto,
-    coffee, roaster,
+    coffee, experiments, roaster,
     types::{coffee::CoffeeId, roaster::RoasterId, UserId},
     AppState, CherryError,
 };
 use axum::{
     extract::{Path, Query, State},
+    response::IntoResponse,
     Json,
 };
+use axum_macros::debug_handler;
 use chrono::Utc;
+use http::StatusCode;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use super::dtos::{CoffeeDto, NewRoasterDto, RoasterDto};
+use super::dtos::{CoffeeDto, ExperimentDto, NewExperimentDto, NewRoasterDto, RoasterDto};
 
 pub(crate) async fn add_new_coffee(
     State(state): State<AppState>,
@@ -101,5 +104,42 @@ pub(crate) async fn delete_coffee(
 ) -> Result<(), CherryError> {
     let pool = &state.db_pool;
     coffee::delete_coffee(pool, &coffee_id.into(), &UserId::test_user()).await?;
+    Ok(())
+}
+
+#[debug_handler]
+pub(crate) async fn add_experiment(
+    State(state): State<AppState>,
+    Path(coffee_id): Path<Uuid>,
+    Json(new_experiment): Json<NewExperimentDto>,
+) -> Result<(StatusCode, Json<ExperimentDto>), CherryError> {
+    let pool = &state.db_pool;
+    let user_id = UserId::test_user();
+    let added_experiment: ExperimentDto =
+        experiments::add_new_experiment(pool, &user_id, &coffee_id.into(), new_experiment.into())
+            .await?
+            .into();
+
+    Ok((StatusCode::CREATED, Json(added_experiment)))
+}
+
+pub(crate) async fn get_experiments(
+    State(state): State<AppState>,
+    Path(coffee_id): Path<Uuid>,
+) -> Result<(), CherryError> {
+    Ok(())
+}
+
+pub(crate) async fn get_experiment(
+    State(state): State<AppState>,
+    Path((coffee_id, experiment_id)): Path<(Uuid, Uuid)>,
+) -> Result<(), CherryError> {
+    Ok(())
+}
+
+pub(crate) async fn delete_experiment(
+    State(state): State<AppState>,
+    Path((coffee_id, experiment_id)): Path<(Uuid, Uuid)>,
+) -> Result<(), CherryError> {
     Ok(())
 }

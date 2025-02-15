@@ -6,6 +6,7 @@ use sqlx::{
     migrate::Migrator,
     postgres::{PgPool, PgPoolOptions},
 };
+use strum::ParseError;
 use thiserror::Error;
 
 use crate::CherryError;
@@ -20,6 +21,8 @@ pub(crate) enum CherryDbError {
     Delete(String),
     #[error("Failed to select: `{0}`")]
     Select(String),
+    #[error("Failed to parse str from db: `{0}`")]
+    DbParse(ParseError),
 }
 
 const MAX_CONNECTIONS: u32 = 50;
