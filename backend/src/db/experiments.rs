@@ -1,5 +1,8 @@
-use crate::types::experiment::Experiment;
-use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
+use crate::types::{
+    experiment::{Experiment, ExperimentId},
+    UserId,
+};
+use chrono::{NaiveDate, NaiveDateTime};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -65,4 +68,25 @@ pub(crate) async fn add_new_experiment(
     .try_into()?;
 
     Ok(new_experiment)
+}
+
+pub(crate) async fn delete_experiment(
+    pool: &PgPool,
+    user_id: &UserId,
+    experiment_id: &ExperimentId,
+) -> Result<(), CherryDbError> {
+    let a = sqlx::query!(
+        r#"delete from experiments where experiments.id = $1 and experiments.user_id = $2"#,
+        experiment_id.as_uuid(),
+        user_id.as_uuid(),
+    )
+    .execute(pool)
+    .await
+    .map_err(|err| CherryDbError::Delete(err.to_string()))?;
+
+    if a.rows_affected() < 1 {
+        Err(CherryDbError::Unauthorised)
+    } else {
+        Ok(())
+    }
 }

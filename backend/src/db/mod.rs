@@ -23,6 +23,14 @@ pub(crate) enum CherryDbError {
     Select(String),
     #[error("Failed to parse str from db: `{0}`")]
     DbParse(ParseError),
+    #[error("User is not unauthorised")]
+    Unauthorised,
+}
+
+impl Default for CherryDbError {
+    fn default() -> Self {
+        Self::Unauthorised
+    }
 }
 
 const MAX_CONNECTIONS: u32 = 50;

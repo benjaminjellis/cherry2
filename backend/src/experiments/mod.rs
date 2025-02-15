@@ -4,7 +4,7 @@ use crate::{
     db,
     types::{
         coffee::CoffeeId,
-        experiment::{Experiment, NewExperiment},
+        experiment::{Experiment, ExperimentId, NewExperiment},
         UserId,
     },
     CherryError,
@@ -20,4 +20,13 @@ pub(crate) async fn add_new_experiment(
         db::experiments::add_new_experiment(pool, new_experiment.into_db(user_id, coffee_id))
             .await?;
     Ok(added_experiment)
+}
+
+pub(crate) async fn delete_experiment(
+    pool: &PgPool,
+    user_id: &UserId,
+    experiment_id: &ExperimentId,
+) -> Result<(), CherryError> {
+    db::experiments::delete_experiment(pool, user_id, experiment_id).await?;
+    Ok(())
 }

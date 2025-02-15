@@ -6,7 +6,6 @@ use axum::{
     Json,
 };
 use sqlx::migrate::MigrateError;
-use strum::ParseError;
 use thiserror::Error;
 use tracing::error;
 
@@ -27,14 +26,25 @@ pub(crate) enum CherryError {
 
 impl IntoResponse for CherryError {
     fn into_response(self) -> Response {
+        error!(?self);
         let (status, error_message) = match self {
             CherryError::Setup(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
-            CherryError::CherryDbError(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+            CherryError::CherryDbError(err) => match err {
+                CherryDbError::KeyConflict(_)
+                | CherryDbError::Delete(_)
+                | CherryDbError::Select(_)
+                | CherryDbError::DbParse(_)
+                | CherryDbError::InsertFailed(_) => {
+                    (StatusCode::INTERNAL_SERVER_ERROR, err.to_string())
+                }
+                CherryDbError::Unauthorised => {
+                    (StatusCode::UNAUTHORIZED, String::from("Not authorised"))
+                }
+            },
             CherryError::NotFound(err) => (StatusCode::NOT_FOUND, err.to_string()),
             CherryError::EnvVar(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
             CherryError::Migration(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
         };
-        error!(error_message);
 
         let body = Json(ErrorMessage {
             error: error_message,
