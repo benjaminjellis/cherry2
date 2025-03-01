@@ -53,24 +53,6 @@ pub(crate) struct CoffeeDto {
     pub(crate) in_current_rotation: bool,
 }
 
-impl From<Coffee> for CoffeeDto {
-    fn from(value: Coffee) -> Self {
-        Self {
-            name: value.name,
-            id: *value.id.as_uuid(),
-            roaster: *value.roaster.as_uuid(),
-            roast_date: value.roast_date,
-            origin: value.origin,
-            varetial: value.varetial,
-            process: value.process,
-            tasting_notes: value.tasting_notes,
-            liked: value.liked,
-            in_current_rotation: value.in_current_rotation,
-            roaster_name: value.roaster_name,
-        }
-    }
-}
-
 #[derive(Serialize, Deserialize)]
 pub(crate) struct NewRoasterDto {
     pub(crate) name: String,
@@ -80,24 +62,6 @@ pub(crate) struct NewRoasterDto {
 pub(crate) struct RoasterDto {
     pub(crate) id: Uuid,
     pub(crate) name: String,
-}
-
-impl From<Roaster> for RoasterDto {
-    fn from(value: Roaster) -> Self {
-        Self {
-            id: *value.id.as_uuid(),
-            name: value.name,
-        }
-    }
-}
-
-impl From<NewRoaster> for RoasterDto {
-    fn from(value: NewRoaster) -> Self {
-        Self {
-            id: *value.id.as_uuid(),
-            name: value.name,
-        }
-    }
 }
 
 impl NewRoasterDto {
@@ -116,26 +80,6 @@ pub(crate) enum BrewMethodDto {
     MokaPot,
 }
 
-impl From<BrewMethodDto> for BrewMethod {
-    fn from(value: BrewMethodDto) -> Self {
-        match value {
-            BrewMethodDto::Espresso => Self::Espresso,
-            BrewMethodDto::Filter => Self::Filter,
-            BrewMethodDto::MokaPot => Self::MokaPot,
-        }
-    }
-}
-
-impl From<BrewMethod> for BrewMethodDto {
-    fn from(value: BrewMethod) -> Self {
-        match value {
-            BrewMethod::Espresso => Self::Espresso,
-            BrewMethod::Filter => Self::Filter,
-            BrewMethod::MokaPot => Self::MokaPot,
-        }
-    }
-}
-
 #[derive(Serialize)]
 pub(crate) struct ExperimentDto {
     pub(crate) id: Uuid,
@@ -151,24 +95,6 @@ pub(crate) struct ExperimentDto {
     pub(crate) last_updated: DateTime<Utc>,
 }
 
-impl From<Experiment> for ExperimentDto {
-    fn from(value: Experiment) -> Self {
-        Self {
-            id: *value.id.as_uuid(),
-            date: value.date,
-            coffee_id: *value.coffee_id.as_uuid(),
-            brew_method: value.brew_method.into(),
-            grinder: value.grinder,
-            grind_setting: value.grind_setting,
-            recipe: value.recipe,
-            liked: value.liked,
-            notes: value.notes,
-            added: value.added,
-            last_updated: value.last_updated,
-        }
-    }
-}
-
 #[derive(Deserialize)]
 pub(crate) struct NewExperimentDto {
     pub(crate) date: Option<NaiveDate>,
@@ -180,16 +106,94 @@ pub(crate) struct NewExperimentDto {
     pub(crate) notes: String,
 }
 
-impl From<NewExperimentDto> for NewExperiment {
-    fn from(value: NewExperimentDto) -> Self {
-        Self {
-            date: value.date,
-            brew_method: value.brew_method.into(),
-            grinder: value.grinder,
-            grind_setting: value.grind_setting,
-            recipe: value.recipe,
-            liked: value.liked,
-            notes: value.notes,
+mod conversion {
+    use super::*;
+
+    impl From<NewExperimentDto> for NewExperiment {
+        fn from(value: NewExperimentDto) -> Self {
+            Self {
+                date: value.date,
+                brew_method: value.brew_method.into(),
+                grinder: value.grinder,
+                grind_setting: value.grind_setting,
+                recipe: value.recipe,
+                liked: value.liked,
+                notes: value.notes,
+            }
+        }
+    }
+
+    impl From<Coffee> for CoffeeDto {
+        fn from(value: Coffee) -> Self {
+            Self {
+                name: value.name,
+                id: *value.id.as_uuid(),
+                roaster: *value.roaster.as_uuid(),
+                roast_date: value.roast_date,
+                origin: value.origin,
+                varetial: value.varetial,
+                process: value.process,
+                tasting_notes: value.tasting_notes,
+                liked: value.liked,
+                in_current_rotation: value.in_current_rotation,
+                roaster_name: value.roaster_name,
+            }
+        }
+    }
+
+    impl From<Roaster> for RoasterDto {
+        fn from(value: Roaster) -> Self {
+            Self {
+                id: *value.id.as_uuid(),
+                name: value.name,
+            }
+        }
+    }
+
+    impl From<NewRoaster> for RoasterDto {
+        fn from(value: NewRoaster) -> Self {
+            Self {
+                id: *value.id.as_uuid(),
+                name: value.name,
+            }
+        }
+    }
+
+    impl From<BrewMethodDto> for BrewMethod {
+        fn from(value: BrewMethodDto) -> Self {
+            match value {
+                BrewMethodDto::Espresso => Self::Espresso,
+                BrewMethodDto::Filter => Self::Filter,
+                BrewMethodDto::MokaPot => Self::MokaPot,
+            }
+        }
+    }
+
+    impl From<BrewMethod> for BrewMethodDto {
+        fn from(value: BrewMethod) -> Self {
+            match value {
+                BrewMethod::Espresso => Self::Espresso,
+                BrewMethod::Filter => Self::Filter,
+                BrewMethod::MokaPot => Self::MokaPot,
+            }
+        }
+    }
+
+    impl From<Experiment> for ExperimentDto {
+        fn from(value: Experiment) -> Self {
+            Self {
+                id: *value.id.as_uuid(),
+                date: value.date,
+                coffee_id: *value.coffee_id.as_uuid(),
+                brew_method: value.brew_method.into(),
+                grinder: value.grinder,
+                grind_setting: value.grind_setting,
+                recipe: value.recipe,
+                liked: value.liked,
+                notes: value.notes,
+                added: value.added,
+                last_updated: value.last_updated,
+            }
         }
     }
 }
