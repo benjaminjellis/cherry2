@@ -2,7 +2,7 @@ use crate::{
     api::dtos::NewCoffeeRequestDto,
     coffee, experiments, roaster,
     types::{coffee::CoffeeId, roaster::RoasterId, UserId},
-    AppState, CherryError,
+    CherryError,
 };
 use axum::{
     extract::{Path, Query, State},
@@ -13,7 +13,10 @@ use http::StatusCode;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use super::dtos::{CoffeeDto, ExperimentDto, NewExperimentDto, NewRoasterDto, RoasterDto};
+use super::{
+    dtos::{CoffeeDto, ExperimentDto, NewExperimentDto, NewRoasterDto, RoasterDto},
+    state::AppState,
+};
 
 /// Adds a new coffee to the database.
 ///
