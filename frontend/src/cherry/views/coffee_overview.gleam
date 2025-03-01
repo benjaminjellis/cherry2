@@ -1,12 +1,16 @@
+import cherry/components/spinner
 import cherry/components/table
 import cherry/model.{type Model}
 import cherry/msg
+import cherry/route
 import cherry/types.{type CoffeeData}
 import cherry/views/shared.{footer, header, main_div_class, view_class}
+import gleam/bool
 import gleam/dict
 import lustre/attribute.{class}
 import lustre/element
 import lustre/element/html
+import lustre/event
 import rada/date
 
 pub fn view(model: Model, id: String) -> element.Element(msg.Msg) {
@@ -19,23 +23,35 @@ pub fn view(model: Model, id: String) -> element.Element(msg.Msg) {
   ])
 }
 
-fn build_row_for_experiments(coffee: types.Experiment) {
-  html.tr(table.row_class(coffee.id), [])
+fn build_row_for_experiments(experiment: types.Experiment) {
+  html.tr(table.row_class(experiment.id), [
+    table.table_element(experiment.date |> date.to_iso_string),
+    table.table_element(experiment.grinder),
+    table.table_element(experiment.grind_setting),
+    table.table_element(experiment.liked |> bool.to_string),
+  ])
 }
 
 fn experiments_table(experiment_data: List(types.Experiment)) {
-  table.generic_table(["a", "b"], experiment_data, build_row_for_experiments)
+  table.generic_table(
+    ["date", "grinder", "grind setting", "liked"],
+    experiment_data,
+    build_row_for_experiments,
+  )
 }
 
-fn spinner() {
-  html.div([class("flex justify-center items-center")], [
-    html.div(
+fn add_new_experiment_button() {
+  html.div([class("flex justify-between items-center mb-2")], [
+    html.h2([class("text-lg font-semibold")], []),
+    html.button(
       [
         class(
-          "w-16 h-16 border-4 border-pink-300 border-t-transparent rounded-full animate-spin",
+          "px-4 py-2 text-sm bg-lime-200 text-white rounded hover:bg-lime-500 transition",
         ),
+        attribute.alt("Add a new experiment"),
+        event.on_click(msg.OnRouteChange(route.AddCoffee)),
       ],
-      [],
+      [html.text("➕")],
     ),
   ])
 }
@@ -100,14 +116,17 @@ fn main_content(
   let _ = case coffee_data {
     Error(_) ->
       html.main([class("flex-grow p-4")], [
-        html.div([main_div_class()], [spinner()]),
+        html.div([main_div_class()], [spinner.spinner()]),
       ])
     Ok(coffee) ->
       html.main([class("p-8 flex justify-center")], [
         html.div([], [
           coffee_overview(coffee),
           html.br([]),
-          html.div([], [experiments_table(experiments)]),
+          html.div([], [
+            experiments_table(experiments),
+            add_new_experiment_button(),
+          ]),
         ]),
       ])
   }

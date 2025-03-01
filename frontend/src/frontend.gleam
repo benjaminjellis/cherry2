@@ -2,12 +2,13 @@ import cherry/api
 import cherry/model.{type Model, Model}
 import cherry/msg.{type Msg}
 import cherry/route.{
-  About, AddCoffee, CoffeeOverview, Coffees, Experiments, NotFound, Profile,
-  SignUp, Splash,
+  About, AddCoffee, AddExperiment, CoffeeOverview, Coffees, Experiments,
+  NotFound, Profile, SignUp, Splash,
 }
 import cherry/types
 import cherry/views/about
 import cherry/views/add_coffee
+import cherry/views/add_experiment
 import cherry/views/coffee_overview
 import cherry/views/coffees
 import cherry/views/experiments
@@ -49,6 +50,7 @@ fn view(model: Model) -> element.Element(Msg) {
         model |> model.get_list_of_roasters,
         model.new_coffee_input,
       )
+    route.AddExperiment -> add_experiment.view()
   }
 }
 
@@ -236,10 +238,15 @@ pub fn update_on_route_change(
     True -> []
   }
   case route {
-    About | Coffees | NotFound | Splash | Experiments | Profile | SignUp -> #(
-      Model(..model, current_route: route),
-      effect.batch(effects),
-    )
+    About
+    | Coffees
+    | NotFound
+    | Splash
+    | Experiments
+    | Profile
+    | AddExperiment
+    | SignUp -> #(Model(..model, current_route: route), effect.batch(effects))
+
     AddCoffee -> {
       let roaster =
         model

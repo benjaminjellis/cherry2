@@ -11,6 +11,7 @@ pub type Route {
   Profile
   SignUp
   AddCoffee
+  AddExperiment
 }
 
 pub fn to_string(route: Route) {
@@ -24,6 +25,7 @@ pub fn to_string(route: Route) {
     SignUp -> "/signup"
     AddCoffee -> "add_coffee"
     Profile -> "/profile"
+    AddExperiment -> "/add_experiment"
   }
 }
 
@@ -47,5 +49,7 @@ pub fn to_uri(route: Route) {
     Profile -> uri.Uri(None, None, None, None, "/profile", None, None)
     SignUp -> uri.Uri(None, None, None, None, "/sign_up", None, None)
     AddCoffee -> uri.Uri(None, None, None, None, "/add_coffee", None, None)
+    AddExperiment ->
+      uri.Uri(None, None, None, None, "/add_experiment", None, None)
   }
 }

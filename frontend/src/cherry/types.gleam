@@ -30,7 +30,13 @@ pub fn convert_dto_to_coffee_data(dto: CoffeeDto) {
 }
 
 pub type Experiment {
-  Experiment(id: String)
+  Experiment(
+    id: String,
+    date: date.Date,
+    grinder: String,
+    grind_setting: String,
+    liked: Bool,
+  )
 }
 
 pub type RoasterData {
