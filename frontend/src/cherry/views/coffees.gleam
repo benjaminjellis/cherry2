@@ -10,6 +10,7 @@ import lustre/attribute.{class}
 import lustre/element
 import lustre/element/html
 import lustre/event
+import lustre/internals/vdom
 import rada/date
 
 fn filter_data(data: dict.Dict(String, CoffeeData)) {
@@ -23,6 +24,24 @@ fn filter_data(data: dict.Dict(String, CoffeeData)) {
     }
   })
   |> list.sort(fn(a, b) { date.compare(a.roast_date, b.roast_date) })
+}
+
+fn build_row_for_coffee(coffee: CoffeeData) {
+  html.tr(table.row_class(coffee.id), [
+    table.table_element(coffee.name),
+    table.table_element(coffee.roaster),
+    table.table_element(coffee.origin),
+    table.table_element(coffee.varetial),
+    table.table_element(date.to_iso_string(coffee.roast_date)),
+  ])
+}
+
+pub fn coffees_table(data: List(CoffeeData)) -> vdom.Element(msg.Msg) {
+  table.generic_table(
+    ["name", "roaster", "origin", "varetial", "roast date"],
+    data,
+    build_row_for_coffee,
+  )
 }
 
 pub fn view(model: Model) {
@@ -48,9 +67,6 @@ fn add_new_coffee_button() {
 
 fn main_content(data: List(CoffeeData)) -> element.Element(msg.Msg) {
   html.main([class("flex-grow p-4")], [
-    html.div([main_div_class()], [
-      table.coffees_table(data),
-      add_new_coffee_button(),
-    ]),
+    html.div([main_div_class()], [coffees_table(data), add_new_coffee_button()]),
   ])
 }

@@ -29,10 +29,6 @@ pub fn convert_dto_to_coffee_data(dto: CoffeeDto) {
   ))
 }
 
-pub type Experiments {
-  Experiments(experiments: List(Experiment))
-}
-
 pub type Experiment {
   Experiment(id: String)
 }

@@ -1,3 +1,4 @@
+import cherry/components/table
 import cherry/model.{type Model}
 import cherry/msg
 import cherry/types.{type CoffeeData}
@@ -16,6 +17,14 @@ pub fn view(model: Model, id: String) -> element.Element(msg.Msg) {
     main_content(coffee_data, experiments),
     footer(),
   ])
+}
+
+fn build_row_for_experiments(coffee: types.Experiment) {
+  html.tr(table.row_class(coffee.id), [])
+}
+
+fn experiments_table(experiment_data: List(types.Experiment)) {
+  table.generic_table(["a", "b"], experiment_data, build_row_for_experiments)
 }
 
 fn spinner() {
@@ -82,8 +91,12 @@ fn three_element_row(
 
 fn main_content(
   coffee_data: Result(CoffeeData, Nil),
-  _experiment,
+  experiments: Result(List(types.Experiment), Nil),
 ) -> element.Element(msg.Msg) {
+  let experiments = case experiments {
+    Error(_) -> []
+    Ok(experiments) -> experiments
+  }
   let _ = case coffee_data {
     Error(_) ->
       html.main([class("flex-grow p-4")], [
@@ -91,7 +104,11 @@ fn main_content(
       ])
     Ok(coffee) ->
       html.main([class("p-8 flex justify-center")], [
-        html.div([], [coffee_overview(coffee)]),
+        html.div([], [
+          coffee_overview(coffee),
+          html.br([]),
+          html.div([], [experiments_table(experiments)]),
+        ]),
       ])
   }
 }

@@ -15,6 +15,21 @@ use uuid::Uuid;
 
 use super::dtos::{CoffeeDto, ExperimentDto, NewExperimentDto, NewRoasterDto, RoasterDto};
 
+/// Adds a new coffee to the database.
+///
+/// # Arguments
+///
+/// * `state` - The application state, containing the database pool.
+/// * `payload` - The JSON payload containing the new coffee request.
+///
+/// # Returns
+///
+/// Returns a `Result` containing a tuple with:
+///
+/// * `StatusCode::CREATED` - If the coffee was successfully added.
+/// * `Json<CoffeeDto>` - The newly created coffee as a JSON response.
+///
+/// Returns a `CherryError` if any error occurred during the process.
 pub(crate) async fn add_new_coffee(
     State(state): State<AppState>,
     Json(payload): Json<NewCoffeeRequestDto>,

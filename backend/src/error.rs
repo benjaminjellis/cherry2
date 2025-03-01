@@ -13,15 +13,15 @@ use crate::db::CherryDbError;
 
 #[derive(Error, Debug)]
 pub(crate) enum CherryError {
-    #[error("Missing env var: `{0}`")]
+    #[error("Failed to load environment variable: {0}")]
     EnvVar(VarError),
-    #[error("Encountered error when setting up server: `{0}`")]
+    #[error("Server setup failed: {0}")]
     Setup(String),
-    #[error("Encountered error when running database migration: `{0}`")]
+    #[error("Database migration failed: {0}")]
     Migration(MigrateError),
     #[error(transparent)]
     CherryDbError(#[from] CherryDbError),
-    #[error("Requested item not found")]
+    #[error("Resource not found: {0}")]
     NotFound(String),
 }
 
