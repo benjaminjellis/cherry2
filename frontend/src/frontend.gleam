@@ -123,7 +123,6 @@ pub fn update(
       )
     }
     msg.GetRoasters -> {
-      // TODO: use this to get roasters
       #(model, effect.none())
     }
     msg.EmiaiInput(input) -> {
@@ -161,24 +160,28 @@ pub fn update(
       io.debug(error)
       #(model, effect.none())
     }
-    msg.CoffeesApiRsesponse(Ok(coffee)) -> {
-      let coffees =
-        coffee
-        |> list.try_map(types.convert_dto_to_coffee_data)
-      case coffees {
-        Ok(coffees) -> {
+    msg.CoffeesApiRsesponse(response) -> {
+      case response {
+        Ok(coffee) -> {
           let coffees =
-            coffees
-            |> list.map(fn(x) { #(x.id, x) })
-            |> dict.from_list
-          #(Model(..model, coffees:), effect.none())
+            coffee
+            |> list.try_map(types.convert_dto_to_coffee_data)
+          case coffees {
+            Ok(coffees) -> {
+              let coffees =
+                coffees
+                |> list.map(fn(x) { #(x.id, x) })
+                |> dict.from_list
+              #(Model(..model, coffees:), effect.none())
+            }
+            Error(_) -> #(model, effect.none())
+          }
         }
-        Error(_) -> #(model, effect.none())
+        Error(error) -> {
+          io.debug(error)
+          #(model, effect.none())
+        }
       }
-    }
-    msg.CoffeesApiRsesponse(Error(error)) -> {
-      io.debug(error)
-      #(model, effect.none())
     }
     msg.CoffeeApiRsesponse(resp) -> {
       case resp {
@@ -217,6 +220,27 @@ pub fn update(
           #(model, effect.none())
         }
       }
+    }
+    msg.ExperimentsApiResponse(response) -> {
+      io.debug("Got experiments response")
+      case response {
+        Error(error) -> {
+          io.debug(error)
+          #(model, effect.none())
+        }
+        Ok(experiments) -> {
+          experiments |> list.each(fn(x) { io.debug(x) })
+
+          #(model, effect.none())
+        }
+      }
+    }
+    msg.GetExperiments(coffee_id) -> {
+      io.debug("Getting experiment")
+      #(
+        model,
+        effect.batch([api.get_experiments_for_coffee(coffee_id, model.config)]),
+      )
     }
   }
 }
@@ -265,10 +289,14 @@ pub fn update_on_route_change(
         effect.batch(effects),
       )
     }
-    // TODO: here the effect should be: if there is no ecxperiment data fetch it
-    CoffeeOverview(_) -> #(
-      Model(..model, current_route: route),
-      effect.batch(effects),
-    )
+    CoffeeOverview(id) -> {
+      #(
+        Model(..model, current_route: route),
+        effect.batch([
+          api.get_experiments_for_coffee(id, model.config),
+          ..effects
+        ]),
+      )
+    }
   }
 }

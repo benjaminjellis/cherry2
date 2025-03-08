@@ -16,6 +16,34 @@ fn roaster_decoder() {
   decode.success(dtos.RoasterDto(name:, id:))
 }
 
+fn experiment_decoder() {
+  use id <- decode.field("id", decode.string)
+  use date <- decode.field("date", decode.string)
+  use coffee_id <- decode.field("coffee_id", decode.string)
+  use brew_method <- decode.field("brew_method", decode.string)
+  use grinder <- decode.field("grinder", decode.string)
+  use grind_setting <- decode.field("grind_setting", decode.string)
+  use recipe <- decode.field("recipe", decode.string)
+  use liked <- decode.field("liked", decode.bool)
+  use notes <- decode.field("notes", decode.string)
+  use added <- decode.field("added", decode.string)
+  use last_updated <- decode.field("last_updated", decode.string)
+
+  decode.success(dtos.ExperimentDto(
+    id:,
+    date:,
+    coffee_id:,
+    brew_method:,
+    grinder:,
+    grind_setting:,
+    recipe:,
+    liked:,
+    notes:,
+    added:,
+    last_updated:,
+  ))
+}
+
 fn coffee_decoder() {
   use name <- decode.field("name", decode.string)
   use id <- decode.field("id", decode.string)
@@ -38,6 +66,10 @@ fn coffee_decoder() {
     in_current_rotation:,
     process:,
   ))
+}
+
+fn decode_experiments(data: Dynamic) {
+  decode.run(data, decode.list(experiment_decoder()))
 }
 
 fn decode_roasters(data: Dynamic) {
@@ -79,6 +111,20 @@ pub fn get_all_rasters(config: model.Config) {
   lustre_http.send(
     request,
     lustre_http.expect_json(decode_roasters, msg.RoastersApiResponse),
+  )
+}
+
+pub fn get_experiments_for_coffee(coffee_id: String, config: model.Config) {
+  let request =
+    create_request(
+      config,
+      Get,
+      "",
+      "/api/coffee/" <> coffee_id <> "/experiment",
+    )
+  lustre_http.send(
+    request,
+    lustre_http.expect_json(decode_experiments, msg.ExperimentsApiResponse),
   )
 }
 

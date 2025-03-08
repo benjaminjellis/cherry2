@@ -7,6 +7,7 @@ import cherry/types.{type CoffeeData}
 import cherry/views/shared.{footer, header, main_div_class, view_class}
 import gleam/bool
 import gleam/dict
+import gleam/io
 import lustre/attribute.{class}
 import lustre/element
 import lustre/element/html
@@ -110,8 +111,14 @@ fn main_content(
   experiments: Result(List(types.Experiment), Nil),
 ) -> element.Element(msg.Msg) {
   let experiments = case experiments {
-    Error(_) -> []
-    Ok(experiments) -> experiments
+    Error(_) -> {
+      io.debug("no experiment")
+      []
+    }
+    Ok(experiments) -> {
+      io.debug(experiments)
+      experiments
+    }
   }
   let _ = case coffee_data {
     Error(_) ->

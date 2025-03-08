@@ -39,6 +39,17 @@ pub type Experiment {
   )
 }
 
+pub fn convert_dto_to_experiment(dto: dtos.ExperimentDto) {
+  use date <- result.try(date.from_iso_string(dto.date))
+  Ok(Experiment(
+    id: dto.id,
+    date:,
+    grind_setting: dto.grind_setting,
+    grinder: dto.grinder,
+    liked: dto.liked,
+  ))
+}
+
 pub type RoasterData {
   RoasterData(id: String, name: String)
 }

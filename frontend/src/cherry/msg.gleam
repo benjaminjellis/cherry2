@@ -18,6 +18,8 @@ pub type Msg {
   CoffeesApiRsesponse(Result(List(CoffeeDto), HttpError))
   CoffeeApiRsesponse(Result(CoffeeDto, HttpError))
   GetRoasters
+  GetExperiments(coffee_id: String)
+  ExperimentsApiResponse(Result(List(dtos.ExperimentDto), HttpError))
 }
 
 pub type AddNewCoffeeInputMsg {

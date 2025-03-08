@@ -97,7 +97,7 @@ pub(crate) struct ExperimentDto {
 
 #[derive(Deserialize)]
 pub(crate) struct NewExperimentDto {
-    pub(crate) date: Option<NaiveDate>,
+    pub(crate) date: NaiveDate,
     pub(crate) brew_method: BrewMethodDto,
     pub(crate) grinder: String,
     pub(crate) grind_setting: String,

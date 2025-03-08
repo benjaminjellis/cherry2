@@ -29,3 +29,19 @@ pub type NewCoffeeDto {
 pub type RoasterDto {
   RoasterDto(name: String, id: String)
 }
+
+pub type ExperimentDto {
+  ExperimentDto(
+    id: String,
+    date: String,
+    coffee_id: String,
+    brew_method: String,
+    grinder: String,
+    grind_setting: String,
+    recipe: String,
+    liked: Bool,
+    notes: String,
+    added: String,
+    last_updated: String,
+  )
+}

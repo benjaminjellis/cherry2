@@ -50,9 +50,9 @@ pub(crate) struct Experiment {
 }
 
 pub(crate) struct NewExperiment {
-    pub(crate) date: Option<NaiveDate>,
-    pub(crate) brew_method: BrewMethod,
+    pub(crate) date: NaiveDate,
     pub(crate) grinder: String,
+    pub(crate) brew_method: BrewMethod,
     pub(crate) grind_setting: String,
     pub(crate) recipe: String,
     pub(crate) liked: bool,
@@ -65,7 +65,7 @@ impl NewExperiment {
         ExperimentDb {
             id: *ExperimentId::new().as_uuid(),
             coffee_id: *coffee_isd.as_uuid(),
-            date: self.date.unwrap_or_else(|| now.date()),
+            date: self.date,
             brew_method: self.brew_method.to_string(),
             grinder: self.grinder,
             grind_setting: self.grind_setting,
