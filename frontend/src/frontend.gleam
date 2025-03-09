@@ -64,6 +64,24 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
     Ok(uri) -> map_uri_to_route(uri)
     Error(_) -> Splash
   }
+  let effects = case load_route {
+    About
+    | AddCoffee
+    | AddExperiment
+    | Experiments
+    | Splash
+    | SignUp
+    | Profile
+    | NotFound
+    | Coffees -> []
+    CoffeeOverview(id) -> [api.get_experiments_for_coffee(id, config)]
+  }
+  let effects = [
+    modem.init(on_route_change),
+    api.get_all_rasters(config),
+    api.get_coffees(config),
+    ..effects
+  ]
   #(
     Model(
       coffees,
@@ -79,11 +97,7 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
     // - create the modem router
     // - get coffees from the api
     // - get roasters from the api
-    effect.batch([
-      modem.init(on_route_change),
-      api.get_coffees(config),
-      api.get_all_rasters(config),
-    ]),
+    effect.batch(effects),
   )
 }
 
@@ -153,7 +167,6 @@ pub fn update(
         |> list.map(types.convert_dto_to_roaster_data)
         |> list.map(fn(x) { #(x.id, x) })
         |> dict.from_list
-      io.debug(roasters_dict)
       #(Model(..model, roasters: roasters_dict), effect.none())
     }
     msg.RoastersApiResponse(Error(error)) -> {
@@ -205,7 +218,6 @@ pub fn update(
       io.debug("Got Resp")
       case resp {
         Ok(new_coffee) -> {
-          io.debug(new_coffee)
           let coffee = new_coffee |> types.convert_dto_to_coffee_data
           case coffee {
             Ok(coffee) -> {
@@ -229,9 +241,26 @@ pub fn update(
           #(model, effect.none())
         }
         Ok(experiments) -> {
-          experiments |> list.each(fn(x) { io.debug(x) })
-
-          #(model, effect.none())
+          case experiments |> list.first {
+            Ok(first) -> {
+              let id = first.coffee_id
+              let experiments =
+                experiments
+                |> list.try_map(types.convert_dto_to_experiment)
+              case experiments {
+                Ok(experiments) -> {
+                  let new_experiments =
+                    dict.insert(model.experiments_by_coffee, id, experiments)
+                  #(
+                    Model(..model, experiments_by_coffee: new_experiments),
+                    effect.none(),
+                  )
+                }
+                Error(_) -> #(model, effect.none())
+              }
+            }
+            Error(_) -> #(model, effect.none())
+          }
         }
       }
     }
@@ -290,6 +319,7 @@ pub fn update_on_route_change(
       )
     }
     CoffeeOverview(id) -> {
+      io.debug("Update on change for coffee overview")
       #(
         Model(..model, current_route: route),
         effect.batch([

@@ -5,7 +5,6 @@ import cherry/msg
 import cherry/route
 import cherry/types.{type CoffeeData}
 import cherry/views/shared.{footer, header, main_div_class, view_class}
-import gleam/bool
 import gleam/dict
 import gleam/io
 import lustre/attribute.{class}
@@ -24,18 +23,25 @@ pub fn view(model: Model, id: String) -> element.Element(msg.Msg) {
   ])
 }
 
+fn display_heart(liked) -> String {
+  case liked {
+    True -> "⭐"
+    False -> ""
+  }
+}
+
 fn build_row_for_experiments(experiment: types.Experiment) {
   html.tr(table.row_class(experiment.id), [
     table.table_element(experiment.date |> date.to_iso_string),
     table.table_element(experiment.grinder),
     table.table_element(experiment.grind_setting),
-    table.table_element(experiment.liked |> bool.to_string),
+    table.table_element(experiment.liked |> display_heart),
   ])
 }
 
 fn experiments_table(experiment_data: List(types.Experiment)) {
   table.generic_table(
-    ["date", "grinder", "grind setting", "liked"],
+    ["date", "grinder", "grind setting", ""],
     experiment_data,
     build_row_for_experiments,
   )
@@ -116,7 +122,6 @@ fn main_content(
       []
     }
     Ok(experiments) -> {
-      io.debug(experiments)
       experiments
     }
   }

@@ -13,14 +13,28 @@ use crate::CherryError;
 
 #[derive(Error, Debug)]
 pub(crate) enum CherryDbError {
-    #[error("Failed to insert: `{0}`")]
-    InsertFailed(String),
+    #[error("Failed to insert: {description}: {source}")]
+    Insert {
+        source: sqlx::Error,
+        description: &'static str,
+    },
     #[error("Found conflicting key: `{0}`")]
     KeyConflict(String),
-    #[error("Failed to delete: `{0}`")]
-    Delete(String),
-    #[error("Failed to select: `{0}`")]
-    Select(String),
+    #[error("Failed to delete: {description}: {source}")]
+    Delete {
+        source: sqlx::Error,
+        description: &'static str,
+    },
+    #[error("Failed to select: {description}: {source}")]
+    Select {
+        source: sqlx::Error,
+        description: &'static str,
+    },
+    #[error("Failed to update: {description}: {source}")]
+    Update {
+        source: sqlx::Error,
+        description: &'static str,
+    },
     #[error("Failed to parse str from db: `{0}`")]
     DbParse(ParseError),
     #[error("User is not unauthorised")]

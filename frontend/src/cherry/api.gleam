@@ -139,9 +139,7 @@ pub fn get_coffees(config: model.Config) {
 
 pub fn add_new_coffee(config: model.Config, new_coffee: model.NewCoffeeInput) {
   let body = new_coffee_input_to_string(new_coffee)
-  io.debug(body)
   let request = create_request(config, http.Post, body, "/api/coffee")
-  io.debug(request)
   lustre_http.send(
     request,
     lustre_http.expect_json(decode_coffee, msg.NewCoffeeApiResponse),

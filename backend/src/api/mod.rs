@@ -32,6 +32,10 @@ pub(crate) async fn build_router(db_pool: PgPool) -> Result<axum::Router, Cherry
             "/coffee/{coffee_id}/experiment/{experiment_id}",
             delete(delete_experiment).get(get_experiment),
         )
+        .route(
+            "/coffee/{coffee_id}/experiment/{experiment_id}/like",
+            get(like_coffee),
+        )
         .route("/roaster", post(add_new_roaster).get(get_roasters_for_user))
         .route("/roaster/search", get(get_roasters_by_name))
         .route("/roaster/all", get(get_all_roasters))

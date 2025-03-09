@@ -24,7 +24,6 @@ pub fn generic_table(
   build_row: fn(a) -> vdom.Element(msg.Msg),
 ) {
   let headers = header(headers)
-  io.debug(headers)
   html.table([table_class()], [
     html.thead([], headers),
     html.tbody([], list.reverse(rows(data, [], build_row))),

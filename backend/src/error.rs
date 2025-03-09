@@ -32,12 +32,23 @@ impl IntoResponse for CherryError {
             CherryError::Setup(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
             CherryError::CherryDbError(err) => match err {
                 CherryDbError::KeyConflict(_)
-                | CherryDbError::Delete(_)
-                | CherryDbError::Select(_)
-                | CherryDbError::DbParse(_)
-                | CherryDbError::InsertFailed(_) => {
-                    (StatusCode::INTERNAL_SERVER_ERROR, err.to_string())
+                | CherryDbError::Delete {
+                    source: _,
+                    description: _,
                 }
+                | CherryDbError::Select {
+                    source: _,
+                    description: _,
+                }
+                | CherryDbError::Update {
+                    source: _,
+                    description: _,
+                }
+                | CherryDbError::DbParse(_)
+                | CherryDbError::Insert {
+                    source: _,
+                    description: _,
+                } => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
                 CherryDbError::Unauthorised => {
                     (StatusCode::UNAUTHORIZED, String::from("Not authorised"))
                 }

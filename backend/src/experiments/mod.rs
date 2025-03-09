@@ -48,3 +48,12 @@ pub(crate) async fn get_experiments_for_coffee(
     let experiments = db::experiments::get_experiments_for_coffee(pool, user_id, coffee_id).await?;
     Ok(experiments)
 }
+
+pub(crate) async fn like_experiment(
+    pool: &PgPool,
+    user_id: &UserId,
+    experiment_id: &ExperimentId,
+) -> Result<(), CherryError> {
+    db::experiments::delete_experiment(pool, user_id, experiment_id).await?;
+    Ok(())
+}

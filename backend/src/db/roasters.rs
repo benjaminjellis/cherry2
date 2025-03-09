@@ -26,7 +26,10 @@ pub(crate) async fn get_all_roasters(pool: &PgPool) -> Result<Vec<Roaster>, Cher
     Ok(sqlx::query_as!(RoasterDb, r#"select * from roasters;"#)
         .fetch_all(pool)
         .await
-        .map_err(|err| CherryDbError::Select(err.to_string()))?
+        .map_err(|source| CherryDbError::Select {
+            source,
+            description: "Failed to get all roasters",
+        })?
         .into_iter()
         .map(|a| a.into())
         .collect())
@@ -44,7 +47,10 @@ pub(crate) async fn search_roasters_by_name(
     )
     .fetch_all(pool)
     .await
-    .map_err(|err| CherryDbError::Select(err.to_string()))?
+    .map_err(|source| CherryDbError::Select {
+        source,
+        description: "Failed to select roaster names",
+    })?
     .into_iter()
     .map(|a| a.into())
     .collect())
@@ -66,7 +72,10 @@ pub(crate) async fn get_roasters_for_user(
     )
     .fetch_all(pool)
     .await
-    .map_err(|err| CherryDbError::Select(err.to_string()))?
+    .map_err(|source| CherryDbError::Select {
+        source,
+        description: "Failed to select roasters for user",
+    })?
     .into_iter()
     .map(|a| a.into())
     .collect())
@@ -90,7 +99,10 @@ pub(crate) async fn add_roaster(
         sqlx::Error::Database(db_error) if db_error.constraint() == Some("coffees_id_key") => {
             CherryDbError::KeyConflict("id already used".into())
         }
-        _ => CherryDbError::InsertFailed(e.to_string()),
+        _ => CherryDbError::Insert {
+            source: e,
+            description: "Failed to insert roaster",
+        },
     })
 }
 
@@ -107,6 +119,9 @@ pub(crate) async fn get_roaster_by_id(
     )
     .fetch_optional(pool)
     .await
-    .map_err(|err| CherryDbError::Select(err.to_string()))?;
+    .map_err(|source| CherryDbError::Select {
+        source,
+        description: "Failed to select roaseter by id",
+    })?;
     Ok(roaster.map(Into::into))
 }

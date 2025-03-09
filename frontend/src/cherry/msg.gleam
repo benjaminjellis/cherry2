@@ -36,7 +36,6 @@ pub fn process_add_new_coffee_message(
   model: model.Model,
   msg: AddNewCoffeeInputMsg,
 ) -> model.Model {
-  io.debug(msg)
   case msg {
     VaretialInput(input) ->
       Model(

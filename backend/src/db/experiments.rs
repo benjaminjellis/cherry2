@@ -64,11 +64,35 @@ pub(crate) async fn add_new_experiment(
         sqlx::Error::Database(db_error) if db_error.constraint() == Some("coffees_id_key") => {
             CherryDbError::KeyConflict("id already used".into())
         }
-        _ => CherryDbError::InsertFailed(e.to_string()),
+        _ => CherryDbError::Insert {
+            source: e,
+            description: "Failed to insert a new experiment",
+        },
     })?
     .try_into()?;
 
     Ok(new_experiment)
+}
+
+pub(crate) async fn liked_experiment(
+    pool: &PgPool,
+    user_id: &UserId,
+    experiment_id: &ExperimentId,
+) -> Result<(), CherryDbError> {
+    let a = sqlx::query!(
+        r#"update experiments set liked = True where experiments.id = $1 and experiments.user_id = $2"#,
+        experiment_id.as_uuid(),
+        user_id.as_uuid(),
+    )
+    .execute(pool)
+    .await
+    .map_err(|source| CherryDbError::Update{source, description:"Failed to liked an experiment"})?;
+
+    if a.rows_affected() < 1 {
+        Err(CherryDbError::Unauthorised)
+    } else {
+        Ok(())
+    }
 }
 
 pub(crate) async fn delete_experiment(
@@ -83,7 +107,10 @@ pub(crate) async fn delete_experiment(
     )
     .execute(pool)
     .await
-    .map_err(|err| CherryDbError::Delete(err.to_string()))?;
+    .map_err(|source| CherryDbError::Delete {
+        source,
+        description: "Failed to delete an experiment",
+    })?;
 
     if a.rows_affected() < 1 {
         Err(CherryDbError::Unauthorised)
@@ -107,7 +134,10 @@ pub(crate) async fn get_experiment(
     )
     .fetch_optional(pool)
     .await
-    .map_err(|err| CherryDbError::Select(err.to_string()))?
+    .map_err(|source| CherryDbError::Select {
+        source,
+        description: "failed to select experiment",
+    })?
     .map(TryInto::try_into)
     .transpose()?;
 
@@ -129,7 +159,10 @@ pub(crate) async fn get_experiments_for_coffee(
     )
     .fetch_all(pool)
     .await
-    .map_err(|err| CherryDbError::Select(err.to_string()))?
+    .map_err(|source| CherryDbError::Select {
+        source,
+        description: "Failed to select experiments for coffee",
+    })?
     .into_iter()
     .map(TryInto::try_into)
     .collect::<Result<_, CherryDbError>>()?;

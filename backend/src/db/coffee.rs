@@ -89,7 +89,10 @@ pub(crate) async fn add_coffee(
         sqlx::Error::Database(db_error) if db_error.constraint() == Some("coffees_id_key") => {
             CherryDbError::KeyConflict("id already used".into())
         }
-        _ => CherryDbError::InsertFailed(e.to_string()),
+        _ => CherryDbError::Insert {
+            source: e,
+            description: "Failed to insert new coffee",
+        },
     })?;
     Ok(coffee.into())
 }
@@ -109,7 +112,10 @@ pub(crate) async fn delete_coffee(
     )
     .execute(pool)
     .await
-    .map_err(|err| CherryDbError::Delete(err.to_string()))
+    .map_err(|source| CherryDbError::Delete {
+        source,
+        description: "Failed to delete coffee",
+    })
 }
 
 pub(crate) async fn get_coffee_by_id(
@@ -137,7 +143,10 @@ pub(crate) async fn get_coffee_by_id(
     )
     .fetch_optional(pool)
     .await
-    .map_err(|err| CherryDbError::Select(err.to_string()))?;
+    .map_err(|source| CherryDbError::Select {
+        source,
+        description: "Failed to select coffee by id",
+    })?;
     Ok(coffee.map(Into::into))
 }
 
@@ -162,7 +171,10 @@ pub(crate) async fn get_all_coffees_for_user(
     )
     .fetch_all(pool)
     .await
-    .map_err(|err| CherryDbError::Select(err.to_string()))?;
+    .map_err(|source| CherryDbError::Select {
+        source,
+        description: "Failed to select coffees for user",
+    })?;
     Ok(coffee.into_iter().map(Into::into).collect())
 }
 

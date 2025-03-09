@@ -176,3 +176,13 @@ pub(crate) async fn delete_experiment(
     experiments::delete_experiment(pool, &user_id, &experiment_id.into()).await?;
     Ok(StatusCode::GONE)
 }
+
+pub(crate) async fn like_coffee(
+    State(state): State<AppState>,
+    Path((_, experiment_id)): Path<(Uuid, Uuid)>,
+) -> Result<StatusCode, CherryError> {
+    let pool = &state.db_pool;
+    let user_id = UserId::test_user();
+    experiments::delete_experiment(pool, &user_id, &experiment_id.into()).await?;
+    Ok(StatusCode::GONE)
+}
