@@ -1,5 +1,3 @@
-use std::env::VarError;
-
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -8,28 +6,35 @@ use axum::{
 use sqlx::migrate::MigrateError;
 use thiserror::Error;
 use tracing::error;
+use uuid::Uuid;
 
 use crate::db::CherryDbError;
 
 #[derive(Error, Debug)]
 pub(crate) enum CherryError {
-    #[error("Failed to load environment variable: {0}")]
-    EnvVar(VarError),
-    #[error("Server setup failed: {0}")]
-    Setup(String),
+    #[error("Failed to load environment variable: {var}, source: {source}")]
+    EnvVar {
+        var: &'static str,
+        source: std::env::VarError,
+    },
+    #[error("DB setup failed: {0}")]
+    DbSetup(sqlx::Error),
+    #[error("DB setup failed: {0}")]
+    ServerSetup(std::io::Error),
     #[error("Database migration failed: {0}")]
     Migration(MigrateError),
     #[error(transparent)]
     CherryDbError(#[from] CherryDbError),
     #[error("Resource not found: {0}")]
-    NotFound(String),
+    NotFound(Uuid),
 }
 
 impl IntoResponse for CherryError {
     fn into_response(self) -> Response {
         error!(?self);
         let (status, error_message) = match self {
-            CherryError::Setup(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+            CherryError::DbSetup(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+            CherryError::ServerSetup(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
             CherryError::CherryDbError(err) => match err {
                 CherryDbError::KeyConflict(_)
                 | CherryDbError::Delete {
@@ -54,7 +59,10 @@ impl IntoResponse for CherryError {
                 }
             },
             CherryError::NotFound(err) => (StatusCode::NOT_FOUND, err.to_string()),
-            CherryError::EnvVar(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+            CherryError::EnvVar { source: _, var: _ } => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "missing env var".to_string(),
+            ),
             CherryError::Migration(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
         };
 

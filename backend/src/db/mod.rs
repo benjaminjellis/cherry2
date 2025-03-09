@@ -56,5 +56,5 @@ pub(crate) async fn create_db_pool(database_url: &str) -> Result<PgPool, CherryE
         .max_connections(MAX_CONNECTIONS)
         .connect(database_url)
         .await
-        .map_err(|err| CherryError::Setup(err.to_string()))
+        .map_err(CherryError::DbSetup)
 }

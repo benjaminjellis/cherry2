@@ -12,13 +12,29 @@ use tower_http::cors::{Any, CorsLayer};
 
 use routes::*;
 
-use crate::CherryError;
+use crate::{types::UserId, CherryError};
 
 mod dtos;
 mod routes;
+use serde::{Deserialize, Serialize};
 pub(crate) mod state;
 
-pub(crate) async fn build_router(db_pool: PgPool) -> Result<axum::Router, CherryError> {
+/// User claims
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct UserClaims {
+    /// A unique identifier (UUID), or subject, for the authenticated user. The username might
+    /// not be unique in your user pool. The sub claim is the best way to identify a given user.
+    pub sub: UserId,
+    /// User email
+    pub email: String,
+    #[serde(rename = "cognito:username")]
+    pub username: String,
+}
+
+pub(crate) async fn build_router(
+    db_pool: PgPool,
+    cognito_layer: axum_cognito::CognitoAuthLayer<UserClaims>,
+) -> Result<axum::Router, CherryError> {
     let app_state = AppState { db_pool };
 
     let api_router = Router::new()
@@ -40,6 +56,8 @@ pub(crate) async fn build_router(db_pool: PgPool) -> Result<axum::Router, Cherry
         .route("/roaster/search", get(get_roasters_by_name))
         .route("/roaster/all", get(get_all_roasters))
         .route("/roaster/{roaster_id}", get(get_roaster))
+        .route("/experiment/{experiment_id}/like", get(like_experiment))
+        // .route("/experiment", get(get_experiments_for_user))
         .with_state(app_state);
 
     let cors = CorsLayer::new()
@@ -49,6 +67,9 @@ pub(crate) async fn build_router(db_pool: PgPool) -> Result<axum::Router, Cherry
         // TODO: restrict the origin when deployed
         .allow_origin(Any);
 
-    let app = Router::new().nest("/api", api_router).layer(cors);
+    let app = Router::new()
+        .nest("/api", api_router)
+        .layer(cors)
+        .layer(cognito_layer);
     Ok(app)
 }

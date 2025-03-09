@@ -1,21 +1,21 @@
 use crate::{
     api::dtos::NewCoffeeRequestDto,
     coffee, experiments, roaster,
-    types::{coffee::CoffeeId, roaster::RoasterId, UserId},
+    types::{coffee::CoffeeId, experiment::ExperimentId, roaster::RoasterId},
     CherryError,
 };
 use axum::{
     extract::{Path, Query, State},
-    Json,
+    Extension, Json,
 };
 use chrono::Utc;
 use http::StatusCode;
 use serde::Deserialize;
-use uuid::Uuid;
 
 use super::{
     dtos::{CoffeeDto, ExperimentDto, NewExperimentDto, NewRoasterDto, RoasterDto},
     state::AppState,
+    UserClaims,
 };
 
 /// Adds a new coffee to the database.
@@ -35,11 +35,12 @@ use super::{
 /// Returns a `CherryError` if any error occurred during the process.
 pub(crate) async fn add_new_coffee(
     State(state): State<AppState>,
+    Extension(user_claims): Extension<UserClaims>,
     Json(payload): Json<NewCoffeeRequestDto>,
 ) -> Result<(StatusCode, Json<CoffeeDto>), CherryError> {
     let pool = &state.db_pool;
     let new_coffee = payload.into_new_coffee(CoffeeId::new(), Utc::now());
-    let coffee = coffee::add_new_coffee(pool, &UserId::test_user(), &new_coffee).await?;
+    let coffee = coffee::add_new_coffee(pool, &user_claims.sub, &new_coffee).await?;
 
     let resp: CoffeeDto = coffee.into();
     Ok((StatusCode::CREATED, Json(resp)))
@@ -47,25 +48,28 @@ pub(crate) async fn add_new_coffee(
 
 pub(crate) async fn get_coffee(
     State(state): State<AppState>,
-    Path(coffee_id): Path<Uuid>,
+    Extension(user_claims): Extension<UserClaims>,
+    Path(coffee_id): Path<CoffeeId>,
 ) -> Result<Json<CoffeeDto>, CherryError> {
     let pool = &state.db_pool;
-    let coffee = coffee::get_coffee(pool, &coffee_id.into(), &UserId::test_user()).await?;
+    let coffee = coffee::get_coffee(pool, &coffee_id, &user_claims.sub).await?;
     coffee
         .map(|coffee| Json(coffee.into()))
-        .ok_or(CherryError::NotFound("Coffee not found".into()))
+        .ok_or(CherryError::NotFound(coffee_id.into_uuid()))
 }
 
 pub(crate) async fn get_coffees(
     State(state): State<AppState>,
+    Extension(user_claims): Extension<UserClaims>,
 ) -> Result<Json<Vec<CoffeeDto>>, CherryError> {
     let pool = &state.db_pool;
-    let coffees = coffee::get_all_coffees_for_a_user(pool, &UserId::test_user()).await?;
+    let coffees = coffee::get_all_coffees_for_a_user(pool, &user_claims.sub).await?;
     Ok(Json(coffees.into_iter().map(Into::into).collect()))
 }
 
 pub(crate) async fn add_new_roaster(
     State(state): State<AppState>,
+    Extension(_): Extension<UserClaims>,
     Json(payload): Json<NewRoasterDto>,
 ) -> Result<(StatusCode, Json<RoasterDto>), CherryError> {
     let pool = &state.db_pool;
@@ -76,6 +80,7 @@ pub(crate) async fn add_new_roaster(
 
 pub(crate) async fn get_all_roasters(
     State(state): State<AppState>,
+    Extension(_): Extension<UserClaims>,
 ) -> Result<Json<Vec<RoasterDto>>, CherryError> {
     let pool = &state.db_pool;
     let all_roasters = roaster::get_all_roasters(pool).await?;
@@ -84,10 +89,11 @@ pub(crate) async fn get_all_roasters(
 
 pub(crate) async fn get_roaster(
     State(state): State<AppState>,
-    Path(roster_id): Path<Uuid>,
+    Path(roster_id): Path<RoasterId>,
+    Extension(_): Extension<UserClaims>,
 ) -> Result<(StatusCode, Json<RoasterDto>), CherryError> {
     let pool = &state.db_pool;
-    let roaster = roaster::get_roaster(pool, roster_id.into()).await?;
+    let roaster = roaster::get_roaster(pool, roster_id).await?;
     Ok((StatusCode::CREATED, Json(roaster.into())))
 }
 
@@ -99,6 +105,7 @@ pub(crate) struct RoasterSearch {
 pub(crate) async fn get_roasters_by_name(
     State(state): State<AppState>,
     Query(search): Query<RoasterSearch>,
+    Extension(_): Extension<UserClaims>,
 ) -> Result<Json<Vec<RoasterDto>>, CherryError> {
     let pool = &state.db_pool;
     let roaster = roaster::get_roasters_by_name(pool, search.name).await?;
@@ -107,31 +114,32 @@ pub(crate) async fn get_roasters_by_name(
 
 pub(crate) async fn get_roasters_for_user(
     State(state): State<AppState>,
+    Extension(user_claims): Extension<UserClaims>,
 ) -> Result<Json<Vec<RoasterDto>>, CherryError> {
     let pool = &state.db_pool;
-    let user_id = UserId::test_user();
-    let roaster = roaster::get_roasters_for_user(pool, user_id).await?;
+    let roaster = roaster::get_roasters_for_user(pool, &user_claims.sub).await?;
     Ok(Json(roaster.into_iter().map(Into::into).collect()))
 }
 
 pub(crate) async fn delete_coffee(
     State(state): State<AppState>,
-    Path(coffee_id): Path<Uuid>,
+    Path(coffee_id): Path<CoffeeId>,
+    Extension(user_claims): Extension<UserClaims>,
 ) -> Result<StatusCode, CherryError> {
     let pool = &state.db_pool;
-    coffee::delete_coffee(pool, &coffee_id.into(), &UserId::test_user()).await?;
+    coffee::delete_coffee(pool, &coffee_id, &user_claims.sub).await?;
     Ok(StatusCode::GONE)
 }
 
 pub(crate) async fn add_experiment(
     State(state): State<AppState>,
-    Path(coffee_id): Path<Uuid>,
+    Path(coffee_id): Path<CoffeeId>,
+    Extension(user_claims): Extension<UserClaims>,
     Json(new_experiment): Json<NewExperimentDto>,
 ) -> Result<(StatusCode, Json<ExperimentDto>), CherryError> {
     let pool = &state.db_pool;
-    let user_id = UserId::test_user();
     let added_experiment: ExperimentDto =
-        experiments::add_new_experiment(pool, &user_id, &coffee_id.into(), new_experiment.into())
+        experiments::add_new_experiment(pool, &user_claims.sub, &coffee_id, new_experiment.into())
             .await?
             .into();
 
@@ -140,11 +148,11 @@ pub(crate) async fn add_experiment(
 
 pub(crate) async fn get_experiments_for_coffee(
     State(state): State<AppState>,
-    Path(coffee_id): Path<Uuid>,
+    Path(coffee_id): Path<CoffeeId>,
+    Extension(user_claims): Extension<UserClaims>,
 ) -> Result<Json<Vec<ExperimentDto>>, CherryError> {
     let pool = &state.db_pool;
-    let user_id = UserId::test_user();
-    let experiments = experiments::get_experiments_for_coffee(pool, &user_id, &coffee_id.into())
+    let experiments = experiments::get_experiments_for_coffee(pool, &user_claims.sub, &coffee_id)
         .await?
         .into_iter()
         .map(Into::into)
@@ -154,35 +162,44 @@ pub(crate) async fn get_experiments_for_coffee(
 
 pub(crate) async fn get_experiment(
     State(state): State<AppState>,
-    Path((_, experiment_id)): Path<(Uuid, Uuid)>,
+    Path((_, experiment_id)): Path<(CoffeeId, ExperimentId)>,
+    Extension(user_claims): Extension<UserClaims>,
 ) -> Result<Json<ExperimentDto>, CherryError> {
     let pool = &state.db_pool;
-    let user_id = UserId::test_user();
-    let experiment = experiments::get_experiment(pool, &user_id, &experiment_id.into())
+    let experiment = experiments::get_experiment(pool, &user_claims.sub, &experiment_id)
         .await?
         .map(Into::into);
     match experiment {
         Some(experiment) => Ok(Json(experiment)),
-        None => Err(CherryError::NotFound(experiment_id.to_string())),
+        None => Err(CherryError::NotFound(experiment_id.into_uuid())),
     }
 }
 
 pub(crate) async fn delete_experiment(
     State(state): State<AppState>,
-    Path((_, experiment_id)): Path<(Uuid, Uuid)>,
+    Path((_, experiment_id)): Path<(CoffeeId, ExperimentId)>,
+    Extension(user_claims): Extension<UserClaims>,
 ) -> Result<StatusCode, CherryError> {
     let pool = &state.db_pool;
-    let user_id = UserId::test_user();
-    experiments::delete_experiment(pool, &user_id, &experiment_id.into()).await?;
+    experiments::delete_experiment(pool, &user_claims.sub, &experiment_id).await?;
     Ok(StatusCode::GONE)
 }
 
 pub(crate) async fn like_coffee(
     State(state): State<AppState>,
-    Path((_, experiment_id)): Path<(Uuid, Uuid)>,
+    Path((_, experiment_id)): Path<(CoffeeId, ExperimentId)>,
+    Extension(user_claims): Extension<UserClaims>,
 ) -> Result<StatusCode, CherryError> {
     let pool = &state.db_pool;
-    let user_id = UserId::test_user();
-    experiments::delete_experiment(pool, &user_id, &experiment_id.into()).await?;
+    experiments::delete_experiment(pool, &user_claims.sub, &experiment_id).await?;
     Ok(StatusCode::GONE)
+}
+
+pub(crate) async fn like_experiment(
+    State(state): State<AppState>,
+    Extension(user_claims): Extension<UserClaims>,
+    Path(experiment_id): Path<ExperimentId>,
+) -> Result<(), CherryError> {
+    experiments::like_experiment(&state.db_pool, &user_claims.sub, &experiment_id).await?;
+    Ok(())
 }

@@ -54,6 +54,6 @@ pub(crate) async fn like_experiment(
     user_id: &UserId,
     experiment_id: &ExperimentId,
 ) -> Result<(), CherryError> {
-    db::experiments::delete_experiment(pool, user_id, experiment_id).await?;
+    db::experiments::like_experiment(pool, user_id, experiment_id).await?;
     Ok(())
 }

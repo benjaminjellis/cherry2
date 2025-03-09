@@ -74,7 +74,7 @@ pub(crate) async fn add_new_experiment(
     Ok(new_experiment)
 }
 
-pub(crate) async fn liked_experiment(
+pub(crate) async fn like_experiment(
     pool: &PgPool,
     user_id: &UserId,
     experiment_id: &ExperimentId,

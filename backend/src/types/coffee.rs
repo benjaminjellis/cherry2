@@ -1,26 +1,14 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use uuid::Uuid;
 
+use crate::impl_new_type_id;
+
 use super::roaster::RoasterId;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct CoffeeId(Uuid);
 
-impl CoffeeId {
-    pub(crate) fn as_uuid(&self) -> &Uuid {
-        &self.0
-    }
-
-    pub(crate) fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-}
-
-impl From<Uuid> for CoffeeId {
-    fn from(value: Uuid) -> Self {
-        Self(value)
-    }
-}
+impl_new_type_id!(CoffeeId);
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct NewCoffee {

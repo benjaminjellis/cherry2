@@ -5,28 +5,17 @@ use strum::{Display, EnumString};
 
 use uuid::Uuid;
 
-use crate::db::{experiments::ExperimentDb, CherryDbError};
+use crate::{
+    db::{experiments::ExperimentDb, CherryDbError},
+    impl_new_type_id,
+};
 
 use super::{coffee::CoffeeId, UserId};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct ExperimentId(Uuid);
 
-impl ExperimentId {
-    pub(crate) fn as_uuid(&self) -> &Uuid {
-        &self.0
-    }
-
-    pub(crate) fn new() -> Self {
-        Self(Uuid::now_v7())
-    }
-}
-
-impl From<Uuid> for ExperimentId {
-    fn from(value: Uuid) -> Self {
-        Self(value)
-    }
-}
+impl_new_type_id!(ExperimentId);
 
 #[derive(Debug, EnumString, Display, Copy, Clone)]
 pub(crate) enum BrewMethod {

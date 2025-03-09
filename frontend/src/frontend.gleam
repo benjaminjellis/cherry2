@@ -60,10 +60,18 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
   let coffees = dict.new()
   let dict = dict.new()
   let roasters = dict.new()
+
   let load_route = case modem.initial_uri() {
     Ok(uri) -> map_uri_to_route(uri)
     Error(_) -> Splash
   }
+
+  let effects = [
+    modem.init(on_route_change),
+    api.get_all_rasters(config),
+    api.get_coffees(config),
+  ]
+
   let effects = case load_route {
     About
     | AddCoffee
@@ -73,15 +81,13 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
     | SignUp
     | Profile
     | NotFound
-    | Coffees -> []
-    CoffeeOverview(id) -> [api.get_experiments_for_coffee(id, config)]
+    | Coffees -> effects
+    CoffeeOverview(id) -> [
+      api.get_experiments_for_coffee(id, config),
+      ..effects
+    ]
   }
-  let effects = [
-    modem.init(on_route_change),
-    api.get_all_rasters(config),
-    api.get_coffees(config),
-    ..effects
-  ]
+
   #(
     Model(
       coffees,
@@ -93,10 +99,6 @@ fn init(_flags) -> #(Model, effect.Effect(Msg)) {
       model.new_coffee_input(),
       config,
     ),
-    // on init: 
-    // - create the modem router
-    // - get coffees from the api
-    // - get roasters from the api
     effect.batch(effects),
   )
 }

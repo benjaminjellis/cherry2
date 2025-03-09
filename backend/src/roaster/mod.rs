@@ -35,15 +35,13 @@ pub(crate) async fn get_roaster(
 ) -> Result<Roaster, CherryError> {
     let roaster = db_roaster::get_roaster_by_id(pool, roster_id).await?;
 
-    roaster.ok_or(CherryError::NotFound(
-        "Roaster with specified id not found".into(),
-    ))
+    roaster.ok_or(CherryError::NotFound(roster_id.into_uuid()))
 }
 
 /// Get all the roasters that a user has logged a coffee for before
 pub(crate) async fn get_roasters_for_user(
     pool: &PgPool,
-    user_id: UserId,
+    user_id: &UserId,
 ) -> Result<Vec<Roaster>, CherryError> {
-    Ok(db_roaster::get_roasters_for_user(pool, &user_id).await?)
+    Ok(db_roaster::get_roasters_for_user(pool, user_id).await?)
 }
